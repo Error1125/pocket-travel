@@ -471,6 +471,15 @@
         width: 100%;
         background: #fff;
       }
+      .oauth .btn + .btn {
+        margin-top: 8px;
+      }
+      .oauth .oauth-apple {
+        background: #000;
+        color: #fff;
+        border-color: #000;
+        font-weight: 600;
+      }
       .sep {
         display: flex;
         align-items: center;
@@ -772,10 +781,16 @@
         /* ============ 登录（云端模式） ============ */
         var authMode = "signin";
         function renderAuth() {
-          var google =
-            PT.authMethods.indexOf("google") >= 0
-              ? '<div class="sep">或</div><div class="oauth"><button class="btn" id="gBtn">🔵 用 Google 账号登录</button></div>'
-              : "";
+          var oauthBtns = "";
+          if (PT.authMethods.indexOf("apple") >= 0)
+            oauthBtns +=
+              '<button class="btn oauth-apple" id="aBtn"> 用 Apple 账号登录</button>';
+          if (PT.authMethods.indexOf("google") >= 0)
+            oauthBtns +=
+              '<button class="btn" id="gBtn">🔵 用 Google 账号登录</button>';
+          var oauth = oauthBtns
+            ? '<div class="sep">或</div><div class="oauth">' + oauthBtns + "</div>"
+            : "";
           $("app").innerHTML =
             '<div class="auth">' +
             '<div class="seal">旅</div>' +
@@ -790,7 +805,7 @@
             '<div class="field"><label>密码</label><input id="iPw" type="password" autocomplete="current-password" placeholder="至少 6 位" /></div>' +
             '<button class="btn primary" id="doAuth">登录</button>' +
             '<div class="err" id="authErr"></div>' +
-            google +
+            oauth +
             "</div>" +
             (PENDING_JOIN
               ? '<p class="modebar">登录后将自动加入分享给你的行程（' +
@@ -821,6 +836,12 @@
           if ($("gBtn"))
             $("gBtn").onclick = function () {
               PT.signInWithGoogle().catch(function (e) {
+                $("authErr").textContent = e.message || "登录失败";
+              });
+            };
+          if ($("aBtn"))
+            $("aBtn").onclick = function () {
+              PT.signInWithApple().catch(function (e) {
                 $("authErr").textContent = e.message || "登录失败";
               });
             };

@@ -745,6 +745,16 @@
       }
 
       /* ---------- 地图 ---------- */
+      #saprobe {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 0;
+        height: env(safe-area-inset-bottom, 0px);
+        pointer-events: none;
+        visibility: hidden;
+        z-index: -1;
+      }
       #map {
         position: fixed;
         inset: 0;
@@ -1218,7 +1228,7 @@
         left: 0;
         right: 0;
         top: 0;
-        height: 100%;
+        height: calc(100% + 64px);
         z-index: 655;
         transform: translateY(60%);
         will-change: transform;
@@ -1226,7 +1236,8 @@
         background: linear-gradient(
           165deg,
           rgba(250, 248, 242, 0.82),
-          rgba(246, 243, 235, 0.66)
+          rgba(247, 244, 236, 0.93) 46%,
+          rgba(247, 244, 236, 0.98)
         );
         backdrop-filter: blur(28px) saturate(1.75);
         -webkit-backdrop-filter: blur(28px) saturate(1.75);
@@ -2004,6 +2015,7 @@
   </head>
   <body>
     <div id="map"></div>
+    <div id="saprobe"></div>
 
     <div id="daybar"></div>
 
@@ -10611,6 +10623,8 @@
           return vh() - (106 + safeB());
         }
         function safeB() {
+          var p = $("saprobe");
+          if (p && p.offsetHeight) return p.offsetHeight;
           var d = parseFloat(
             getComputedStyle(document.documentElement).getPropertyValue(
               "--sa-b",

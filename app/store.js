@@ -256,7 +256,11 @@
       .replace(/\/+$/, "");
     var _key = String(CFG.SUPABASE_ANON_KEY || "").trim();
     this.sb = window.supabase.createClient(_url, _key, {
-      auth: { persistSession: true, autoRefreshToken: true },
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+      },
     });
     this.sb.auth.onAuthStateChange(function (_evt, session) {
       self._setUser(session && session.user);
@@ -304,7 +308,14 @@
   };
   CloudBackend.prototype.signUp = function (email, pw, name) {
     return this.sb.auth
-      .signUp({ email: email, password: pw, options: { data: { name: name || email } } })
+      .signUp({
+        email: email,
+        password: pw,
+        options: {
+          data: { name: name || email },
+          emailRedirectTo: location.href.split("#")[0],
+        },
+      })
       .then(function (r) {
         if (r.error) throw r.error;
         return r.data;
@@ -318,11 +329,17 @@
         return r.data;
       });
   };
-  CloudBackend.prototype.signInWithGoogle = function () {
+  CloudBackend.prototype.signInWithOAuth = function (provider) {
     return this.sb.auth.signInWithOAuth({
-      provider: "google",
+      provider: provider,
       options: { redirectTo: location.href.split("#")[0] },
     });
+  };
+  CloudBackend.prototype.signInWithGoogle = function () {
+    return this.signInWithOAuth("google");
+  };
+  CloudBackend.prototype.signInWithApple = function () {
+    return this.signInWithOAuth("apple");
   };
   CloudBackend.prototype.signOut = function () {
     var self = this;
@@ -552,6 +569,11 @@
     },
     signInWithGoogle: function () {
       return backend.signInWithGoogle();
+    },
+    signInWithApple: function () {
+      return backend.signInWithApple
+        ? backend.signInWithApple()
+        : Promise.reject(new Error("Apple 登录仅云端模式可用"));
     },
     signOut: function () {
       return backend.signOut();
