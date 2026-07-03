@@ -17,14 +17,14 @@
  * 真正的数据安全由 Supabase 的 Row Level Security（schema.sql 里已写好）保证。
  * ========================================================================== */
 window.PT_CONFIG = {
-  SUPABASE_URL: "",
-  SUPABASE_ANON_KEY: "",
+  SUPABASE_URL: "https://yhgdxutmcouxonrurgkc.supabase.co",
+  SUPABASE_ANON_KEY: "sb_publishable_xrbumelnf24T1UVMclZwrg_TzlPt9cD",
 
   /* 云端登录方式（仅云端模式生效）
    *   email  : 邮箱 + 密码（最通用，无需额外配置，默认开启）
    *   google : 需在 Supabase → Authentication → Providers 里开启 Google
    * 注：微信登录 Supabase 暂不原生支持，需自建 OAuth，作为后续扩展。 */
-  AUTH_METHODS: ["email"],
+  AUTH_METHODS: ["email", "google"],
 
   /* 品牌名，显示在首页顶部 */
   APP_NAME: "口袋旅行",

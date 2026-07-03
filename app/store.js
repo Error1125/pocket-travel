@@ -249,11 +249,15 @@
         self._user = LocalBackend.getUser();
       });
     }
-    this.sb = window.supabase.createClient(
-      CFG.SUPABASE_URL,
-      CFG.SUPABASE_ANON_KEY,
-      { auth: { persistSession: true, autoRefreshToken: true } },
-    );
+    // 容错：允许误粘 “.../rest/v1/” 或带尾斜杠/空格的 URL，自动纠正为主域名
+    var _url = String(CFG.SUPABASE_URL || "")
+      .trim()
+      .replace(/\/(rest|auth|storage|realtime)\/v1\/?$/i, "")
+      .replace(/\/+$/, "");
+    var _key = String(CFG.SUPABASE_ANON_KEY || "").trim();
+    this.sb = window.supabase.createClient(_url, _key, {
+      auth: { persistSession: true, autoRefreshToken: true },
+    });
     this.sb.auth.onAuthStateChange(function (_evt, session) {
       self._setUser(session && session.user);
       self._authCbs.forEach(function (cb) {

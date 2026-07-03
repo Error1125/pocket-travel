@@ -965,7 +965,16 @@
       }
       #brand {
         flex: none;
-        padding: 8px 11px;
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        padding: 8px 12px;
+        cursor: pointer;
+        text-decoration: none;
+        -webkit-tap-highlight-color: transparent;
+        transition:
+          transform 0.12s ease,
+          box-shadow 0.12s ease;
         border-radius: 14px;
         font-size: 13px;
         font-weight: 800;
@@ -976,6 +985,10 @@
         border: 1px solid var(--gl-bd);
         box-shadow: var(--shadow);
         color: #8c2f1b;
+      }
+      #brand:active {
+        transform: scale(0.94);
+        box-shadow: 0 1px 6px rgba(23, 34, 51, 0.18);
       }
       #dchips {
         flex: 1;
@@ -1163,7 +1176,7 @@
         left: 10px;
         right: 10px;
         bottom: calc(var(--sa-b) + 10px);
-        z-index: 645;
+        z-index: 760;
         height: 82px;
         border-radius: 22px;
         display: flex;
@@ -10624,7 +10637,8 @@
             var sx = e.clientX,
               sy = e.clientY,
               t0 = Date.now(),
-              drag = false;
+              drag = false,
+              sheetWasOpen = false;
             function mv(ev) {
               var dx = ev.clientX - sx,
                 dy = ev.clientY - sy;
@@ -10632,6 +10646,10 @@
                 drag = true;
                 el.classList.add("drag");
                 showDrop();
+                // 拖拽开始：把详情卡 + 主抽屉都收到最下方，露出橙色投放区
+                sheetWasOpen = $("sheet").classList.contains("on");
+                if (sheetWasOpen) $("sheet").classList.remove("on");
+                snapTo(snapPeek);
               }
               if (drag) {
                 el.style.left = x0 + dx + "px";
@@ -10662,6 +10680,8 @@
                     el.style.transition = "";
                     el.classList.remove("drag");
                   }, 320);
+                  // 没投进行程 → 把刚收起的详情卡弹回来
+                  if (sheetWasOpen && sheetId) $("sheet").classList.add("on");
                 }
               } else if (Date.now() - t0 < 600) {
                 openSheet(bid, { origin: bubOrigin });
@@ -11063,7 +11083,8 @@
         /* ---------- 顶栏 ---------- */
         function renderDaybar() {
           var bar = $("daybar");
-          var h = '<div id="brand">🏮 口袋帖</div><div id="dchips">';
+          var h =
+            '<a id="brand" href="index.html" title="返回全部行程">‹ 🏮</a><div id="dchips">';
           DAYS.forEach(function (d) {
             h +=
               '<button class="dch' +
