@@ -12,7 +12,7 @@
       content="black-translucent"
     />
     <meta name="theme-color" content="#dfe7ec" />
-    <title>東京口袋帖</title>
+    <title>口袋旅行</title>
     <style>
       /* required styles */
 
@@ -693,7 +693,7 @@
       }
     </style>
     <style>
-      /* ===== 東京口袋帖 v2 · 样式 ===== */
+      /* ===== 口袋旅行 v2 · 样式 ===== */
       :root {
         --ink: #1b2530;
         --ink2: #5a6875;
@@ -2348,7 +2348,9 @@
 
     <div id="daybar"></div>
     <div id="presence"></div>
-    <div id="pickbar">📍 在地图上点一下，放置这个地点<button id="pickCancel">取消</button></div>
+    <div id="pickbar">
+      📍 在地图上点一下，放置这个地点<button id="pickCancel">取消</button>
+    </div>
 
     <div id="sidectl">
       <button id="btnFit" title="全览今天">⛶</button>
@@ -2398,7 +2400,7 @@
 
     <div id="hint">
       <div class="hcard">
-        <h3>🗺️ 東京口袋帖 · 玩法</h3>
+        <h3>🗺️ 口袋旅行 · 玩法</h3>
         <p>
           <span class="hi">📍</span
           ><span
@@ -2421,8 +2423,8 @@
         <p>
           <span class="hi">📌</span
           ><span
-            ><b>图钉章＝重要锚点</b
-            >（机票 / 酒店 / 预约这类硬节点），其余全是菜单不是任务</span
+            ><b>图钉章＝重要锚点</b>（机票 / 酒店 /
+            预约这类硬节点），其余全是菜单不是任务</span
           >
         </p>
         <button id="hintok">知道了，出发 →</button>
@@ -10326,7 +10328,7 @@
     <script src="app/config.js"></script>
     <script src="app/store.js"></script>
     <script>
-      /* ===== 東京口袋帖 v2 · 数据 ===== */
+      /* ===== 口袋旅行 v2 · 数据 ===== */
       var CAT = {
         eat: { em: "🍜", cn: "餐厅", col: "#E8734A" },
         sweet: { em: "🍡", cn: "甜品小吃", col: "#E7A03C" },
@@ -10340,10 +10342,39 @@
 
       /* n名称 j日文 c类别 la/ln坐标 ar区域 d描述 p价位 t时间 a锚点 o不上图 */
       var P = {
-        s_stn: { n: "东京站", c: "spot", la: 35.6812, ln: 139.7671, ar: "丸之内", d: "示例数据 · 红砖车站。导入完整行程后会替换成真实景点。" },
-        s_senso: { n: "浅草寺", c: "spot", la: 35.7148, ln: 139.7967, ar: "浅草", d: "示例数据 · 雷门与仲见世商店街。" },
-        s_sky: { n: "晴空塔", c: "fun", la: 35.7101, ln: 139.8107, ar: "押上", d: "示例数据 · 展望台。" },
-        s_ramen: { n: "拉面店（示例）", c: "eat", la: 35.7009, ln: 139.774, ar: "上野", d: "示例数据 · 占位餐厅。", p: "¥1,000" }
+        s_stn: {
+          n: "东京站",
+          c: "spot",
+          la: 35.6812,
+          ln: 139.7671,
+          ar: "丸之内",
+          d: "示例数据 · 红砖车站。导入完整行程后会替换成真实景点。",
+        },
+        s_senso: {
+          n: "浅草寺",
+          c: "spot",
+          la: 35.7148,
+          ln: 139.7967,
+          ar: "浅草",
+          d: "示例数据 · 雷门与仲见世商店街。",
+        },
+        s_sky: {
+          n: "晴空塔",
+          c: "fun",
+          la: 35.7101,
+          ln: 139.8107,
+          ar: "押上",
+          d: "示例数据 · 展望台。",
+        },
+        s_ramen: {
+          n: "拉面店（示例）",
+          c: "eat",
+          la: 35.7009,
+          ln: 139.774,
+          ar: "上野",
+          d: "示例数据 · 占位餐厅。",
+          p: "¥1,000",
+        },
       };
       var DAYS = [
         {
@@ -10445,7 +10476,10 @@
               "チェックインお願いします。予約した〇〇です",
               "办入住，我是预订的〇〇",
             ],
-            ["荷物を預かってもらえますか？", "能寄存行李吗（换酒店/寄存当天用）"],
+            [
+              "荷物を預かってもらえますか？",
+              "能寄存行李吗（换酒店/寄存当天用）",
+            ],
             ["大浴場は何時までですか？", "大浴场开到几点"],
             ["この電車は押上に止まりますか？", "这趟车停押上吗"],
           ],
@@ -10479,7 +10513,7 @@
       ];
     </script>
     <script>
-      /* ===== 東京口袋帖 v2 · app ===== */
+      /* ===== 口袋旅行 v2 · app ===== */
       (function () {
         "use strict";
         /* ==== 口袋旅行：解析当前行程 id，并从本地缓存【同步】载入（秒开 / 离线） ==== */
@@ -10495,8 +10529,7 @@
            必须先 await 它，之后的云端 loadDoc / saveDoc 才有可用的 sb 客户端——
            否则好友在新设备打开共享行程只会看到示例数据，本机的编辑也同步不到云端。
            init 是幂等的（内部缓存同一个 promise），在别的页面调过也不冲突。 */
-        var _ptReady =
-          window.PT && PT.init ? PT.init() : Promise.resolve();
+        var _ptReady = window.PT && PT.init ? PT.init() : Promise.resolve();
         var _doc = null;
         try {
           _doc = window.PT ? PT.loadDocSync(_tripId) : null;
@@ -10695,7 +10728,11 @@
                   '" rows="2">' +
                   esc(f.v || "") +
                   "</textarea>"
-                : '<input id="mf-' + f.k + '" value="' + esc(f.v || "") + '">') +
+                : '<input id="mf-' +
+                  f.k +
+                  '" value="' +
+                  esc(f.v || "") +
+                  '">') +
               "</div>";
           });
           h +=
@@ -10865,8 +10902,7 @@
           );
           $("pe-a").addEventListener("change", function () {
             $("pe-warn").style.display = this.checked ? "" : "none";
-            if (this.checked)
-              toast("⚠️ 注意：你正在把它设为<b>重要锚点</b>");
+            if (this.checked) toast("⚠️ 注意：你正在把它设为<b>重要锚点</b>");
           });
           function grab() {
             return {
@@ -11018,9 +11054,7 @@
             )
               return;
             if (
-              !confirm(
-                "再确认一次：删除锚点「" + p.n + "」？此操作不可恢复。",
-              )
+              !confirm("再确认一次：删除锚点「" + p.n + "」？此操作不可恢复。")
             )
               return;
           } else {
@@ -12448,7 +12482,8 @@
             } catch (e) {}
             applyTrip(j);
             toast(
-              "✅ 已导入" + (j.meta && j.meta.title ? "：" + j.meta.title : "行程"),
+              "✅ 已导入" +
+                (j.meta && j.meta.title ? "：" + j.meta.title : "行程"),
             );
           };
           r.readAsText(file);
@@ -12457,7 +12492,7 @@
           var data = {
             v: 2,
             meta: {
-              title: "東京口袋帖",
+              title: "口袋旅行",
               exported: new Date().toISOString().slice(0, 10),
             },
             P: P,
@@ -12471,7 +12506,7 @@
           var url = URL.createObjectURL(blob);
           var a = document.createElement("a");
           a.href = url;
-          a.download = "東京口袋帖_行程.json";
+          a.download = "口袋旅行_行程.json";
           document.body.appendChild(a);
           a.click();
           setTimeout(function () {
@@ -12570,7 +12605,11 @@
         function delIntelSec(si) {
           var sec = (RES.sections || [])[si];
           if (!sec) return;
-          if (!confirm("删除整组「" + (sec.h || "") + "」？组里的内容都会一起消失。"))
+          if (
+            !confirm(
+              "删除整组「" + (sec.h || "") + "」？组里的内容都会一起消失。",
+            )
+          )
             return;
           RES.sections.splice(si, 1);
           save();
@@ -12594,10 +12633,8 @@
               if (p && p.a && !p.o && !seenA[id]) {
                 seenA[id] = 1;
                 var ex = "";
-                if (p.tr)
-                  ex += '<div class="if-x">🚃 ' + esc(p.tr) + "</div>";
-                if (p.bk)
-                  ex += '<div class="if-x">🎫 ' + esc(p.bk) + "</div>";
+                if (p.tr) ex += '<div class="if-x">🚃 ' + esc(p.tr) + "</div>";
+                if (p.bk) ex += '<div class="if-x">🎫 ' + esc(p.bk) + "</div>";
                 anchors +=
                   '<div class="if-c"><b>' +
                   esc(d.date) +
@@ -12614,7 +12651,11 @@
             });
           });
           if (anchors)
-            h += '<div class="if-h">' + esc(an.h || "⛩️ 行程锚点") + "</div>" + anchors;
+            h +=
+              '<div class="if-h">' +
+              esc(an.h || "⛩️ 行程锚点") +
+              "</div>" +
+              anchors;
           // 需预约但不是锚点的点，自动汇总一组
           var books = "";
           Object.keys(P).forEach(function (id) {
@@ -12798,7 +12839,8 @@
           }, 60);
         }
         window.PT_applyDoc = PT_applyDoc;
-        window.renderPresence = renderPresence; /* 同 PT_applyDoc：暴露给外部（调试/测试）*/
+        window.renderPresence =
+          renderPresence; /* 同 PT_applyDoc：暴露给外部（调试/测试）*/
         /* 订阅：初次用最新版覆盖本地占位（好友新设备打开共享行程时）；
            之后同行实时编辑会推送过来自动刷新。本地模式下 connect 是空操作。
            关键：必须等 _ptReady（后端/会话就绪）后再 connect，否则云端 sb 尚未建立，
@@ -12814,7 +12856,8 @@
               onPresence: renderPresence,
               onError: function (err) {
                 /* 本地已有缓存就静默（离线也能用）；否则说明这份云端行程读不到 */
-                if (window.PT && PT.loadDocSync && PT.loadDocSync(_tripId)) return;
+                if (window.PT && PT.loadDocSync && PT.loadDocSync(_tripId))
+                  return;
                 var msg = (err && err.message) || "";
                 toast(
                   /row|PGRST|permission|policy/i.test(msg)

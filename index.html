@@ -781,6 +781,9 @@
         /* ============ 登录（云端模式） ============ */
         var authMode = "signin";
         function renderAuth() {
+          // 登录页不该有底部操作栏：清掉挂在 body 上的常驻 dock（退出登录时残留的根因）
+          var _oldDock = $("dock");
+          if (_oldDock) _oldDock.remove();
           var oauthBtns = "";
           if (PT.authMethods.indexOf("apple") >= 0)
             oauthBtns +=
