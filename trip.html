@@ -736,6 +736,21 @@
         user-select: none;
         -webkit-touch-callout: none;
       }
+      /* 底部安全区（Home 指示条 / 旧 Safari 工具条位置）铺一层磨砂玻璃，
+         盖住 standalone 模式下透出的灰底，与抽屉/卡片的玻璃质感统一 */
+      body::after {
+        content: "";
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: var(--sa-b);
+        z-index: 1;
+        pointer-events: none;
+        background: rgba(247, 244, 236, 0.9);
+        backdrop-filter: blur(20px) saturate(1.6);
+        -webkit-backdrop-filter: blur(20px) saturate(1.6);
+      }
       button {
         font: inherit;
         color: inherit;
@@ -2051,9 +2066,9 @@
       /* ==== 地图选点提示条 ==== */
       #pickbar {
         position: fixed;
-        top: calc(var(--sa-t) + 12px);
+        top: calc(var(--sa-t) + 58px);
         left: 50%;
-        transform: translateX(-50%) translateY(-160%);
+        transform: translateX(-50%) translateY(calc(-1 * (var(--sa-t) + 130px)));
         z-index: 900;
         display: flex;
         align-items: center;
@@ -2100,7 +2115,8 @@
       .pcard {
         width: min(560px, 100vw);
         max-height: 84vh;
-        overflow: auto;
+        overflow-y: auto;
+        overflow-x: hidden;
         background: var(--paper);
         border-radius: 22px 22px 0 0;
         padding: 18px 18px calc(16px + var(--sa-b));
@@ -2223,15 +2239,23 @@
         display: flex;
         gap: 10px;
         margin-top: 12px;
+        position: sticky;
+        bottom: 0;
+        padding-top: 12px;
+        background: var(--paper);
+        box-shadow: 0 -10px 12px -6px var(--paper);
+        z-index: 2;
       }
       .pbtns .btn-ghost {
         flex: 1;
         margin: 0;
       }
-      .pbtns .pdanger {
-        flex: 0 0 auto;
+      /* 删除单独占一整行，放在取消/保存上方；不再挤进 flex 行导致横向溢出 */
+      .pdel-row {
         color: var(--verm);
         border-color: rgba(224, 73, 46, 0.4);
+        background: rgba(224, 73, 46, 0.06);
+        margin: 2px 0 4px;
       }
       .pmain {
         flex: 1.4;
@@ -10830,9 +10854,10 @@
             '<div class="anchor-warn" id="pe-warn"' +
             (isAnchor ? "" : ' style="display:none"') +
             ">⚠️ 你正在添加的是<b>重要锚点</b>：它会钉死在当天行程里、显示在情报页，之后的修改和删除都需要再次确认。</div>";
-          h += '<div class="pbtns">';
           if (!isNew)
-            h += '<button class="btn-ghost pdanger" id="pe-del">🗑 删除</button>';
+            h +=
+              '<button class="btn-ghost pdel-row" id="pe-del">🗑 删除这个地点</button>';
+          h += '<div class="pbtns">';
           h +=
             '<button class="btn-ghost" id="pe-no">取消</button><button class="pmain" id="pe-ok">' +
             (isNew ? "添加" : "保存修改") +
@@ -10877,16 +10902,23 @@
           $("pe-pick").addEventListener("click", function () {
             var draft = grab();
             closeMask();
+            function reopen() {
+              openEditor(id, {
+                mode: opt.mode,
+                dayId: opt.dayId,
+                draft: draft,
+              });
+            }
             _pick = {
               cb: function (ll) {
                 draft.la = +ll.lat.toFixed(5);
                 draft.ln = +ll.lng.toFixed(5);
-                openEditor(id, {
-                  mode: opt.mode,
-                  dayId: opt.dayId,
-                  draft: draft,
-                });
+                reopen();
                 toast("📍 位置已选好");
+              },
+              cancel: function () {
+                /* 取消选点：把编辑框连同已填内容原样弹回，不丢数据 */
+                reopen();
               },
             };
             $("pickbar").classList.add("on");
@@ -11098,9 +11130,11 @@
           clearTmp();
         });
         $("pickCancel").addEventListener("click", function () {
+          var p = _pick;
           _pick = null;
           $("pickbar").classList.remove("on");
-          toast("已取消选点");
+          if (p && p.cancel) p.cancel();
+          else toast("已取消选点");
         });
 
         function mkHtml(inner, name, extra) {
