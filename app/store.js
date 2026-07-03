@@ -8,8 +8,9 @@
  * 关键设计：行程页永远先从 localStorage 缓存【同步】读出来（秒开 + 离线可用），
  * 云端拉取/实时同步只在后台悄悄进行，不阻塞界面。
  *
- * 一份「行程文档 (doc)」 = { P, DAYS, RES, S }
+ * 一份「行程文档 (doc)」 = { P, DAYS, RES, LANG, S }
  *   P/DAYS/RES = 行程内容（地点、每日安排、情报）
+ *   LANG       = 语言急救包（分组短句；空数组=隐藏该 tab；缺省=模板内置包）
  *   S          = 使用中的规划状态 {plans, done, sw, coach, nav}
  * ========================================================================== */
 (function () {
@@ -519,8 +520,12 @@
       },
     );
     if (this._channels[id]) return;
+    var myKey = (this._user && this._user.id) || "anon";
+    var myName = (this._user && this._user.name) || "同行者";
     var ch = this.sb
-      .channel("trip-" + id)
+      .channel("trip-" + id, {
+        config: { presence: { key: myKey } },
+      })
       .on(
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "trips", filter: "id=eq." + id },
@@ -535,7 +540,29 @@
           }
         },
       )
-      .subscribe();
+      /* Presence：谁正打开着这份行程。join/leave 都会触发 sync，
+         回调只带「别人」的名字，UI 层空数组=隐藏胶囊 */
+      .on("presence", { event: "sync" }, function () {
+        if (!opt.onPresence) return;
+        var st = {};
+        try {
+          st = ch.presenceState() || {};
+        } catch (e) {}
+        var others = [];
+        Object.keys(st).forEach(function (k) {
+          if (k === myKey) return;
+          var m = st[k] && st[k][0];
+          if (m && m.name) others.push(m.name);
+        });
+        opt.onPresence(others);
+      })
+      .subscribe(function (status) {
+        if (status === "SUBSCRIBED") {
+          try {
+            ch.track({ name: myName });
+          } catch (e) {}
+        }
+      });
     this._channels[id] = ch;
   };
   CloudBackend.prototype.disconnect = function (id) {

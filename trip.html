@@ -2011,6 +2011,326 @@
         color: #fff3e8;
         box-shadow: 0 8px 20px rgba(195, 52, 24, 0.4);
       }
+
+      /* ==== 同行人在线胶囊 ==== */
+      #presence {
+        position: fixed;
+        left: 10px;
+        top: 70px;
+        z-index: 640;
+        display: none;
+        align-items: center;
+        padding: 6px 13px;
+        border-radius: 999px;
+        background: var(--gl-bg);
+        border: 1px solid var(--gl-bd);
+        backdrop-filter: blur(14px) saturate(1.2);
+        -webkit-backdrop-filter: blur(14px) saturate(1.2);
+        box-shadow: var(--shadow);
+        font-size: 12px;
+        font-weight: 800;
+        color: var(--ink);
+        max-width: 66vw;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      #presence.on {
+        display: flex;
+      }
+      #presence .pd {
+        flex: none;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #35b26b;
+        margin-right: 6px;
+        box-shadow: 0 0 0 3px rgba(53, 178, 107, 0.16);
+      }
+
+      /* ==== 地图选点提示条 ==== */
+      #pickbar {
+        position: fixed;
+        top: calc(var(--sa-t) + 12px);
+        left: 50%;
+        transform: translateX(-50%) translateY(-160%);
+        z-index: 900;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 15px;
+        border-radius: 999px;
+        background: var(--verm);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        box-shadow: var(--shadow);
+        transition: transform 0.28s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+        white-space: nowrap;
+      }
+      #pickbar.on {
+        transform: translateX(-50%) translateY(0);
+      }
+      #pickbar button {
+        border: 0;
+        border-radius: 999px;
+        padding: 4px 11px;
+        background: rgba(255, 255, 255, 0.24);
+        color: #fff;
+        font-weight: 800;
+        font-size: 12px;
+        cursor: pointer;
+      }
+
+      /* ==== 编辑器弹层（地点 / 小表单共用） ==== */
+      #pmask {
+        position: fixed;
+        inset: 0;
+        z-index: 880;
+        display: none;
+        align-items: flex-end;
+        justify-content: center;
+        background: rgba(23, 34, 51, 0.35);
+        backdrop-filter: blur(3px);
+        -webkit-backdrop-filter: blur(3px);
+      }
+      #pmask.on {
+        display: flex;
+      }
+      .pcard {
+        width: min(560px, 100vw);
+        max-height: 84vh;
+        overflow: auto;
+        background: var(--paper);
+        border-radius: 22px 22px 0 0;
+        padding: 18px 18px calc(16px + var(--sa-b));
+        box-shadow: 0 -12px 40px rgba(23, 34, 51, 0.25);
+        box-sizing: border-box;
+      }
+      .pcard .pt {
+        font-size: 17px;
+        font-weight: 900;
+        margin: 0 0 12px;
+        color: var(--ink);
+      }
+      .pfield {
+        margin-bottom: 10px;
+      }
+      .pfield.half {
+        display: inline-block;
+        width: calc(50% - 5px);
+        vertical-align: top;
+      }
+      .pfield.half + .pfield.half {
+        margin-left: 8px;
+      }
+      .pfield label {
+        display: block;
+        font-size: 11.5px;
+        font-weight: 800;
+        color: var(--ink2);
+        margin-bottom: 4px;
+      }
+      .pfield label em {
+        color: var(--verm);
+        font-style: normal;
+      }
+      .pfield input,
+      .pfield textarea {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1.5px solid rgba(27, 37, 48, 0.14);
+        border-radius: 12px;
+        background: #fff;
+        padding: 9px 11px;
+        font-size: 14px;
+        color: var(--ink);
+        font-family: inherit;
+        outline: none;
+        resize: vertical;
+      }
+      .pfield input:focus,
+      .pfield textarea:focus {
+        border-color: var(--blue);
+      }
+      .ll-row {
+        display: flex;
+        gap: 8px;
+      }
+      .ll-row input {
+        flex: 1;
+        min-width: 0;
+      }
+      .ll-row button {
+        flex: none;
+        border: 1.5px solid rgba(27, 37, 48, 0.16);
+        background: #fff;
+        border-radius: 12px;
+        padding: 0 12px;
+        font-size: 12.5px;
+        font-weight: 800;
+        color: var(--ink);
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      .cat-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .cchip {
+        border: 1.5px solid rgba(27, 37, 48, 0.12);
+        background: #fff;
+        border-radius: 999px;
+        padding: 5px 11px;
+        font-size: 12.5px;
+        font-weight: 700;
+        color: var(--ink);
+        cursor: pointer;
+      }
+      .cchip.on {
+        background: var(--ink);
+        color: #fff;
+        border-color: var(--ink);
+      }
+      .anchor-line {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13.5px;
+        font-weight: 700;
+        color: var(--ink);
+        margin: 4px 0 8px;
+        cursor: pointer;
+      }
+      .anchor-line input {
+        width: 17px;
+        height: 17px;
+        accent-color: var(--verm);
+      }
+      .anchor-warn {
+        background: rgba(224, 73, 46, 0.09);
+        border: 1.5px dashed rgba(224, 73, 46, 0.5);
+        color: #b23a22;
+        border-radius: 12px;
+        padding: 9px 11px;
+        font-size: 12.5px;
+        font-weight: 700;
+        line-height: 1.55;
+        margin-bottom: 10px;
+      }
+      .pbtns {
+        display: flex;
+        gap: 10px;
+        margin-top: 12px;
+      }
+      .pbtns .btn-ghost {
+        flex: 1;
+        margin: 0;
+      }
+      .pbtns .pdanger {
+        flex: 0 0 auto;
+        color: var(--verm);
+        border-color: rgba(224, 73, 46, 0.4);
+      }
+      .pmain {
+        flex: 1.4;
+        border: 0;
+        border-radius: 14px;
+        padding: 12px;
+        background: var(--ink);
+        color: #fff;
+        font-size: 14.5px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      .pmain:active {
+        transform: scale(0.98);
+      }
+
+      /* ==== 「＋ 添加」虚线按钮（行程 / 随缘池 / 语言 / 情报共用） ==== */
+      .add-place {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+        margin: 12px 0 4px;
+        padding: 11px;
+        border-radius: 14px;
+        cursor: pointer;
+        border: 1.6px dashed rgba(27, 37, 48, 0.28);
+        background: rgba(255, 255, 255, 0.55);
+        color: var(--ink2);
+        font-size: 13.5px;
+        font-weight: 800;
+      }
+      .add-place:active {
+        transform: scale(0.98);
+      }
+      .dch-add {
+        min-width: 34px;
+        font-size: 16px;
+        font-weight: 900;
+        color: var(--ink2);
+      }
+
+      /* ==== 语言包 / 情报页的小操作按钮 ==== */
+      .lg-s,
+      .if-h {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .lg-add,
+      .lg-del,
+      .if-op {
+        flex: none;
+        border: 0;
+        background: rgba(27, 37, 48, 0.07);
+        color: var(--ink2);
+        border-radius: 999px;
+        width: 22px;
+        height: 22px;
+        line-height: 22px;
+        font-size: 12px;
+        font-weight: 900;
+        cursor: pointer;
+        padding: 0;
+        text-align: center;
+      }
+      .lg-add,
+      .if-ops {
+        margin-left: auto;
+      }
+      .if-ops {
+        display: inline-flex;
+        gap: 6px;
+      }
+      .lg-r {
+        position: relative;
+        padding-right: 36px;
+      }
+      .lg-del {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        opacity: 0.55;
+      }
+      .if-x {
+        font-size: 12px;
+        color: var(--ink2);
+        margin-top: 3px;
+      }
+      .if-c .row {
+        position: relative;
+        padding-right: 30px;
+      }
+      .if-rowdel {
+        position: absolute;
+        right: 0;
+        top: 2px;
+        opacity: 0.5;
+      }
     </style>
   </head>
   <body>
@@ -2018,6 +2338,8 @@
     <div id="saprobe"></div>
 
     <div id="daybar"></div>
+    <div id="presence"></div>
+    <div id="pickbar">📍 在地图上点一下，放置这个地点<button id="pickCancel">取消</button></div>
 
     <div id="sidectl">
       <button id="btnFit" title="全览今天">⛶</button>
@@ -2056,6 +2378,8 @@
 
     <div id="toast"></div>
 
+    <div id="pmask"><div class="pcard" id="pcard"></div></div>
+
     <input
       id="tripFile"
       type="file"
@@ -2065,7 +2389,7 @@
 
     <div id="hint">
       <div class="hcard">
-        <h3>🏮 東京口袋帖 · 玩法</h3>
+        <h3>🗺️ 東京口袋帖 · 玩法</h3>
         <p>
           <span class="hi">📍</span
           ><span
@@ -2086,10 +2410,10 @@
           >
         </p>
         <p>
-          <span class="hi">🀄</span
+          <span class="hi">📌</span
           ><span
-            ><b>朱印章＝硬性锚点</b
-            >（有死线的那四个），其余全是菜单不是任务</span
+            ><b>图钉章＝重要锚点</b
+            >（机票 / 酒店 / 预约这类硬节点），其余全是菜单不是任务</span
           >
         </p>
         <button id="hintok">知道了，出发 →</button>
@@ -10171,6 +10495,8 @@
             P = _doc.P;
             DAYS = _doc.DAYS;
             if (_doc.RES) RES = _doc.RES;
+            /* LANG 属于行程数据：空数组=用户清空了(隐藏tab)；缺省=老文档，回落到模板内置包 */
+            if (_doc.LANG !== undefined) LANG = _doc.LANG;
           }
         } catch (e) {}
         function $(id) {
@@ -10220,14 +10546,26 @@
           }
           try {
             if (window.PT && PT.saveDoc)
-              PT.saveDoc(_tripId, { P: P, DAYS: DAYS, RES: RES, S: S });
+              PT.saveDoc(_tripId, {
+                P: P,
+                DAYS: DAYS,
+                RES: RES,
+                LANG: LANG,
+                S: S,
+              });
           } catch (e) {}
         }
         function save() {
           /* 先写本地缓存：离线安全、秒级不丢；云端保存去抖 900ms 合并写 */
           try {
             if (window.PT && PT._cache)
-              PT._cache.setDoc(_tripId, { P: P, DAYS: DAYS, RES: RES, S: S });
+              PT._cache.setDoc(_tripId, {
+                P: P,
+                DAYS: DAYS,
+                RES: RES,
+                LANG: LANG,
+                S: S,
+              });
           } catch (e) {}
           _savePending = true;
           if (_saveTimer) clearTimeout(_saveTimer);
@@ -10320,6 +10658,397 @@
           }, 2400);
         }
 
+        /* ---------- 通用小表单弹层 ---------- */
+        var _pick = null; /* 地图选点模式：{cb:fn} */
+        function openMask(html) {
+          $("pcard").innerHTML = html;
+          $("pmask").classList.add("on");
+        }
+        function closeMask() {
+          $("pmask").classList.remove("on");
+          $("pcard").innerHTML = "";
+        }
+        $("pmask").addEventListener("click", function (e) {
+          if (e.target === $("pmask")) closeMask();
+        });
+        /* cfg: {title, fields:[{k,label,v,req,multi}], ok, onOk(values)} */
+        function miniForm(cfg) {
+          var h = '<h3 class="pt">' + esc(cfg.title) + "</h3>";
+          cfg.fields.forEach(function (f) {
+            h +=
+              '<div class="pfield"><label>' +
+              esc(f.label) +
+              (f.req ? " <em>*</em>" : "") +
+              "</label>" +
+              (f.multi
+                ? '<textarea id="mf-' +
+                  f.k +
+                  '" rows="2">' +
+                  esc(f.v || "") +
+                  "</textarea>"
+                : '<input id="mf-' + f.k + '" value="' + esc(f.v || "") + '">') +
+              "</div>";
+          });
+          h +=
+            '<div class="pbtns"><button class="btn-ghost" id="mf-no">取消</button><button class="pmain" id="mf-ok">' +
+            esc(cfg.ok || "保存") +
+            "</button></div>";
+          openMask(h);
+          var first = $("mf-" + cfg.fields[0].k);
+          if (first)
+            setTimeout(function () {
+              try {
+                first.focus();
+              } catch (e) {}
+            }, 80);
+          $("mf-no").addEventListener("click", closeMask);
+          $("mf-ok").addEventListener("click", function () {
+            var out = {},
+              miss = null;
+            cfg.fields.forEach(function (f) {
+              var el = $("mf-" + f.k);
+              var val = el ? el.value.trim() : "";
+              if (f.req && !val && !miss) miss = f.label;
+              out[f.k] = val;
+            });
+            if (miss) {
+              toast("「" + miss + "」还没填");
+              return;
+            }
+            closeMask();
+            if (cfg.onOk) cfg.onOk(out);
+          });
+        }
+
+        /* ---------- 添加一天 ---------- */
+        function addDayFlow() {
+          miniForm({
+            title: "＋ 添加一天",
+            fields: [
+              { k: "date", label: "日期（如 7/21）", req: 1 },
+              { k: "dow", label: "星期（如 二）" },
+              { k: "title", label: "标题（如 🗼 涩谷暴走日）", req: 1 },
+              { k: "note", label: "这一天的备注", multi: 1 },
+            ],
+            ok: "添加",
+            onOk: function (v) {
+              var id = "d" + Date.now().toString(36);
+              DAYS.push({
+                id: id,
+                date: v.date,
+                dow: v.dow || "—",
+                title: v.title,
+                note: v.note || "",
+                plan: [],
+                pool: [],
+                switches: [],
+              });
+              S.plans[id] = [];
+              save();
+              cur = id;
+              poolTarget = id;
+              renderAll();
+              renderInfo();
+              toast("📅 " + v.date + " 已加入行程");
+            },
+          });
+        }
+
+        /* ---------- 地点编辑器（添加 / 修改 / 删除，锚点需确认） ---------- */
+        function catChips(sel) {
+          var h = '<div class="cat-chips">';
+          Object.keys(CAT).forEach(function (k) {
+            h +=
+              '<button type="button" class="cchip' +
+              (k === sel ? " on" : "") +
+              '" data-c="' +
+              k +
+              '">' +
+              CAT[k].em +
+              " " +
+              CAT[k].cn +
+              "</button>";
+          });
+          return h + "</div>";
+        }
+        /* id=null 表示新增；opt={mode:'plan'|'pool', dayId, draft} */
+        function openEditor(id, opt) {
+          opt = opt || {};
+          var isNew = !id;
+          if (isNew && !DAYS.length) {
+            toast("先在顶栏 ＋ 添加一天，再往里放地点");
+            return;
+          }
+          var p = opt.draft || (id ? P[id] : {}) || {};
+          var isAnchor = !!p.a;
+          var h =
+            '<h3 class="pt">' +
+            (isNew ? "＋ 添加地点" : "✎ 编辑 · " + esc((P[id] || p).n || "")) +
+            "</h3>";
+          h +=
+            '<div class="pfield"><label>名称 <em>*</em></label><input id="pe-n" value="' +
+            esc(p.n || "") +
+            '"></div>';
+          h +=
+            '<div class="pfield"><label>当地语言名（问路时给人看，可选）</label><input id="pe-j" value="' +
+            esc(p.j || "") +
+            '"></div>';
+          h +=
+            '<div class="pfield"><label>类别</label>' +
+            catChips(p.c || "spot") +
+            "</div>";
+          h +=
+            '<div class="pfield half"><label>区域（随缘池按它分组）</label><input id="pe-ar" value="' +
+            esc(p.ar || "") +
+            '"></div><div class="pfield half"><label>价位（可选）</label><input id="pe-p" value="' +
+            esc(p.p || "") +
+            '"></div>';
+          h +=
+            '<div class="pfield half"><label>时间（锚点建议填，如 14:30）</label><input id="pe-t" value="' +
+            esc(p.t || "") +
+            '"></div><div class="pfield half"><label>交通方式（如 银座线→浅草）</label><input id="pe-tr" value="' +
+            esc(p.tr || "") +
+            '"></div>';
+          h +=
+            '<div class="pfield"><label>预约情报（需预约的填：平台 / 订单号 / 时段）</label><input id="pe-bk" value="' +
+            esc(p.bk || "") +
+            '"></div>';
+          h +=
+            '<div class="pfield"><label>描述</label><textarea id="pe-d" rows="2">' +
+            esc(p.d || "") +
+            "</textarea></div>";
+          h +=
+            '<div class="pfield"><label>位置 <em>*</em></label><div class="ll-row"><input id="pe-la" inputmode="decimal" placeholder="纬度" value="' +
+            (p.la != null ? p.la : "") +
+            '"><input id="pe-ln" inputmode="decimal" placeholder="经度" value="' +
+            (p.ln != null ? p.ln : "") +
+            '"><button type="button" id="pe-pick">📍 地图选点</button></div></div>';
+          h +=
+            '<label class="anchor-line"><input type="checkbox" id="pe-a"' +
+            (isAnchor ? " checked" : "") +
+            "> 设为 <b>📌 重要锚点</b>（机票 / 酒店 / 有预约的硬节点）</label>" +
+            '<div class="anchor-warn" id="pe-warn"' +
+            (isAnchor ? "" : ' style="display:none"') +
+            ">⚠️ 你正在添加的是<b>重要锚点</b>：它会钉死在当天行程里、显示在情报页，之后的修改和删除都需要再次确认。</div>";
+          h += '<div class="pbtns">';
+          if (!isNew)
+            h += '<button class="btn-ghost pdanger" id="pe-del">🗑 删除</button>';
+          h +=
+            '<button class="btn-ghost" id="pe-no">取消</button><button class="pmain" id="pe-ok">' +
+            (isNew ? "添加" : "保存修改") +
+            "</button></div>";
+          openMask(h);
+          var selCat = p.c || "spot";
+          Array.prototype.forEach.call(
+            $("pcard").querySelectorAll(".cchip"),
+            function (b) {
+              b.addEventListener("click", function () {
+                selCat = b.getAttribute("data-c");
+                Array.prototype.forEach.call(
+                  $("pcard").querySelectorAll(".cchip"),
+                  function (x) {
+                    x.classList.toggle("on", x === b);
+                  },
+                );
+              });
+            },
+          );
+          $("pe-a").addEventListener("change", function () {
+            $("pe-warn").style.display = this.checked ? "" : "none";
+            if (this.checked)
+              toast("⚠️ 注意：你正在把它设为<b>重要锚点</b>");
+          });
+          function grab() {
+            return {
+              n: $("pe-n").value.trim(),
+              j: $("pe-j").value.trim(),
+              c: selCat,
+              ar: $("pe-ar").value.trim(),
+              p: $("pe-p").value.trim(),
+              t: $("pe-t").value.trim(),
+              tr: $("pe-tr").value.trim(),
+              bk: $("pe-bk").value.trim(),
+              d: $("pe-d").value.trim(),
+              la: parseFloat($("pe-la").value),
+              ln: parseFloat($("pe-ln").value),
+              a: $("pe-a").checked,
+            };
+          }
+          $("pe-pick").addEventListener("click", function () {
+            var draft = grab();
+            closeMask();
+            _pick = {
+              cb: function (ll) {
+                draft.la = +ll.lat.toFixed(5);
+                draft.ln = +ll.lng.toFixed(5);
+                openEditor(id, {
+                  mode: opt.mode,
+                  dayId: opt.dayId,
+                  draft: draft,
+                });
+                toast("📍 位置已选好");
+              },
+            };
+            $("pickbar").classList.add("on");
+            try {
+              snapTo(snapPeek);
+            } catch (e) {}
+          });
+          $("pe-no").addEventListener("click", closeMask);
+          if (!isNew)
+            $("pe-del").addEventListener("click", function () {
+              deletePlaceFlow(id);
+            });
+          $("pe-ok").addEventListener("click", function () {
+            var v = grab();
+            if (!v.n) {
+              toast("「名称」还没填");
+              return;
+            }
+            if (isNaN(v.la) || isNaN(v.ln)) {
+              toast("还没有位置——填坐标或点「📍 地图选点」");
+              return;
+            }
+            /* 锚点相关的改动一律二次确认：机票改签、酒店换店都是大事 */
+            var wasAnchor = id && P[id] ? !!P[id].a : false;
+            if (!isNew && (wasAnchor || v.a)) {
+              var what =
+                wasAnchor && !v.a
+                  ? "取消它的锚点身份并保存"
+                  : "修改这个锚点并保存";
+              if (
+                !confirm(
+                  "⚠️ 「" +
+                    (P[id] ? P[id].n : v.n) +
+                    "」" +
+                    (wasAnchor ? "是重要锚点" : "将成为重要锚点") +
+                    "（机票 / 酒店 / 预约级）。\n确定要" +
+                    what +
+                    "吗？",
+                )
+              )
+                return;
+            }
+            if (isNew && v.a) {
+              if (
+                !confirm(
+                  "⚠️ 确认把「" +
+                    v.n +
+                    "」添加为重要锚点？\n它会钉死在当天行程里，之后的修改 / 删除都要再次确认。",
+                )
+              )
+                return;
+            }
+            saveEditor(id, v, opt);
+          });
+        }
+        function saveEditor(id, v, opt) {
+          var isNew = !id;
+          if (isNew) id = "u" + Date.now().toString(36);
+          var old = P[id] || {};
+          var np = {
+            n: v.n,
+            c: v.c,
+            la: v.la,
+            ln: v.ln,
+            ar: v.ar || "自定义",
+            d: v.d,
+          };
+          if (v.j) np.j = v.j;
+          if (v.p) np.p = v.p;
+          if (v.t) np.t = v.t;
+          if (v.tr) np.tr = v.tr;
+          if (v.bk) np.bk = v.bk;
+          if (v.a) np.a = 1;
+          if (old.o) np.o = old.o;
+          P[id] = np;
+          var day = dget((opt && opt.dayId) || cur);
+          if (isNew && day) {
+            if (opt.mode === "pool" && !v.a) {
+              if (day.pool.indexOf(id) < 0) day.pool.push(id);
+            } else {
+              if (opt.mode === "pool" && v.a)
+                toast("📌 锚点不进随缘池——已直接钉进 " + day.date);
+              if (day.plan.indexOf(id) < 0) day.plan.push(id);
+              if (!S.plans[day.id]) S.plans[day.id] = [];
+              if (S.plans[day.id].indexOf(id) < 0) S.plans[day.id].push(id);
+            }
+          }
+          closeMask();
+          save();
+          renderAll();
+          renderInfo();
+          if (tab === "pool") renderPool();
+          toast(
+            isNew
+              ? v.a
+                ? "📌 锚点已钉进 " + (day ? day.date : "行程")
+                : "✚ 已添加「" + esc(v.n) + "」"
+              : "✎ 已保存修改",
+          );
+          if (sheetId === id) openSheet(id, { keep: true });
+        }
+        function deletePlaceFlow(id) {
+          var p = P[id];
+          if (!p) return;
+          if (p.a) {
+            if (
+              !confirm(
+                "⚠️ 「" +
+                  p.n +
+                  "」是重要锚点（机票 / 酒店 / 预约级）。\n真的要删除吗？",
+              )
+            )
+              return;
+            if (
+              !confirm(
+                "再确认一次：删除锚点「" + p.n + "」？此操作不可恢复。",
+              )
+            )
+              return;
+          } else {
+            if (!confirm("删除「" + p.n + "」？会同时从行程和随缘池移除。"))
+              return;
+          }
+          delete P[id];
+          DAYS.forEach(function (d) {
+            var i = d.plan.indexOf(id);
+            if (i >= 0) d.plan.splice(i, 1);
+            i = d.pool.indexOf(id);
+            if (i >= 0) d.pool.splice(i, 1);
+            var pl = S.plans[d.id];
+            if (pl) {
+              i = pl.indexOf(id);
+              if (i >= 0) pl.splice(i, 1);
+            }
+          });
+          delete S.done[id];
+          if (focusId === id) focusId = null;
+          closeMask();
+          if (sheetId === id) closeSheet();
+          save();
+          renderAll();
+          renderInfo();
+          if (tab === "pool") renderPool();
+          toast("🗑 已删除「" + esc(p.n) + "」");
+        }
+
+        /* ---------- 同行人在线（Presence） ---------- */
+        function renderPresence(names) {
+          var el = $("presence");
+          if (!el) return;
+          if (!names || !names.length) {
+            el.classList.remove("on");
+            el.innerHTML = "";
+            return;
+          }
+          el.innerHTML =
+            '<span class="pd"></span>👥 ' +
+            names.map(esc).join("、") +
+            " 也在看这份行程";
+          el.classList.add("on");
+        }
+
         /* ---------- 地图 ---------- */
         var map = L.map("map", {
           zoomControl: false,
@@ -10356,10 +11085,22 @@
         map.on("zoomstart", function () {
           if (!flying) dismissBubbles();
         });
-        map.on("click", function () {
+        map.on("click", function (ev) {
+          if (_pick) {
+            var cb = _pick.cb;
+            _pick = null;
+            $("pickbar").classList.remove("on");
+            if (cb) cb(ev.latlng);
+            return;
+          }
           dismissBubbles();
           closeSheet();
           clearTmp();
+        });
+        $("pickCancel").addEventListener("click", function () {
+          _pick = null;
+          $("pickbar").classList.remove("on");
+          toast("已取消选点");
         });
 
         function mkHtml(inner, name, extra) {
@@ -10732,7 +11473,7 @@
         function removeFromPlan(id, dayId) {
           dayId = dayId || cur;
           if (P[id].a) {
-            toast("🀄 朱印锚点是硬闹钟，不能移除");
+            toast("📌 锚点是硬节点——要改或删，点卡片打开详情 → ✎ 编辑");
             return;
           }
           var plan = S.plans[dayId],
@@ -10812,7 +11553,7 @@
           b += '<p class="sd">' + esc(p.d || "") + "</p>";
           b += '<div class="sbtns">';
           if (inPlan) {
-            if (p.a) b += '<button class="b-sub" disabled>🀄 今日锚点</button>';
+            if (p.a) b += '<button class="b-sub" disabled>📌 今日锚点</button>';
             else b += '<button class="b-sub" id="sh-rm">↩ 移出今日</button>';
             b +=
               '<button class="b-sub' +
@@ -10826,6 +11567,7 @@
               dget(cur).date +
               " 行程</button>";
           }
+          b += '<button class="b-sub" id="sh-edit">✎ 编辑</button>';
           b +=
             '<a class="b-nav" id="sh-nav" target="_blank" rel="noopener" href="' +
             navUrl(p) +
@@ -10882,6 +11624,10 @@
           if ((el = $("sh-done")))
             el.onclick = function () {
               toggleDone(id);
+            };
+          if ((el = $("sh-edit")))
+            el.onclick = function () {
+              openEditor(id);
             };
           function setNav(which) {
             S.nav = which;
@@ -11104,7 +11850,7 @@
         function renderDaybar() {
           var bar = $("daybar");
           var h =
-            '<a id="brand" href="index.html" title="返回全部行程">‹ 🏮</a><div id="dchips">';
+            '<a id="brand" href="index.html" title="返回全部行程">‹ 🧳</a><div id="dchips">';
           DAYS.forEach(function (d) {
             h +=
               '<button class="dch' +
@@ -11117,7 +11863,9 @@
               esc(d.dow) +
               "</span></button>";
           });
-          h += '</div><button id="btnSet" title="玩法说明">🀄</button>';
+          h +=
+            '<button class="dch dch-add" id="dayAdd" title="添加一天">＋</button>';
+          h += '</div><button id="btnSet" title="玩法说明">💡</button>';
           bar.innerHTML = h;
           Array.prototype.forEach.call(
             bar.querySelectorAll(".dch"),
@@ -11130,7 +11878,11 @@
           $("btnSet").addEventListener("click", function () {
             $("hint").classList.add("on");
           });
-          $("sidectl").style.top = bar.offsetHeight + 8 + "px";
+          var da = $("dayAdd");
+          if (da) da.addEventListener("click", addDayFlow);
+          var ph = bar.offsetHeight + 8;
+          $("sidectl").style.top = ph + "px";
+          $("presence").style.top = ph + "px";
         }
 
         /* ---------- 行程视图 ---------- */
@@ -11221,8 +11973,16 @@
         }
 
         function renderPlan() {
+          if (!DAYS.length) {
+            $("v-plan").innerHTML =
+              '<div class="dhead"><h2><small>🗺️</small>还没有行程日</h2><p>点顶栏的 ＋ 先添加一天，再往里放地点。</p></div>' +
+              '<button class="add-place" id="pl-addday">＋ 添加一天</button>';
+            var ad0 = $("pl-addday");
+            if (ad0) ad0.addEventListener("click", addDayFlow);
+            return;
+          }
           var day = dget(cur),
-            plan = S.plans[cur];
+            plan = S.plans[cur] || (S.plans[cur] = []);
           var h =
             '<div class="dhead"><h2><small>' +
             day.date +
@@ -11260,10 +12020,17 @@
             h += cardHtml(id, num, cur);
           });
           h +=
+            '<button class="add-place" id="pl-add">＋ 添加地点到今天（可设为 📌 锚点）</button>';
+          h +=
             '<div class="dtip">点卡片 → 地图定位 + 浮出附近随缘泡泡<br>按住 ⠿ 拖动调顺序 · ✕ 放回池子 · 全部选择自动保存</div>';
           var v = $("v-plan");
           v.innerHTML = h;
           bindPlanEvents(v);
+          var ab = $("pl-add");
+          if (ab)
+            ab.addEventListener("click", function () {
+              openEditor(null, { mode: "plan", dayId: cur });
+            });
         }
         function bindPlanEvents(v) {
           Array.prototype.forEach.call(
@@ -11392,6 +12159,16 @@
 
         /* ---------- 随缘池 ---------- */
         function renderPool() {
+          if (!DAYS.length) {
+            $("v-pool").innerHTML =
+              '<div class="dhead"><h2><small>🎐</small>随缘池</h2><p>先在顶栏 ＋ 添加一天，才能收集备选地点。</p></div>';
+            return;
+          }
+          var tgtOk = DAYS.some(function (d) {
+            return d.id === poolTarget;
+          });
+          if (!tgtOk) poolTarget = DAYS[0].id;
+          if (!S.plans[poolTarget]) S.plans[poolTarget] = [];
           var h =
             '<div class="dhead"><h2><small>🎐</small>随缘池 · 全部备选</h2><p>不排队、不勉强。看对眼了再 ＋ 进当天的行程，或点卡片先在地图上看看它在哪。</p></div>';
           h += '<div class="pool-tgt"><span class="lb">加到：</span>';
@@ -11452,8 +12229,15 @@
                 "</div></div>";
             });
           });
+          h +=
+            '<button class="add-place" id="po-add">＋ 添加备选地点到随缘池</button>';
           var v = $("v-pool");
           v.innerHTML = h;
+          var pa = $("po-add");
+          if (pa)
+            pa.addEventListener("click", function () {
+              openEditor(null, { mode: "pool", dayId: poolTarget });
+            });
           Array.prototype.forEach.call(
             v.querySelectorAll(".tch"),
             function (b) {
@@ -11485,29 +12269,122 @@
           );
         }
 
-        /* ---------- 日语 ---------- */
+        /* ---------- 语言急救包（数据驱动，可增删；空了就藏 tab） ---------- */
+        function syncSayTab() {
+          var btn = $("tabs").querySelector('[data-tab="say"]');
+          var has = LANG && LANG.length > 0;
+          if (btn) btn.style.display = has ? "" : "none";
+          if (!has && tab === "say") setTab("plan");
+        }
         function renderSay() {
+          syncSayTab();
+          var v = $("v-say");
+          if (!LANG || !LANG.length) {
+            v.innerHTML = "";
+            return;
+          }
           var h =
-            '<div class="dhead"><h2><small>🗣️</small>N3 哑巴日语急救包</h2><p>说不出口就把这页递过去——日文都够大。万能钥匙背两句就能横着走。</p></div>';
-          LANG.forEach(function (sec) {
-            h += '<div class="lg-s">' + esc(sec.s) + "</div>";
-            sec.ps.forEach(function (pr) {
+            '<div class="dhead"><h2><small>🗣️</small>语言急救包</h2><p>说不出口就把这页递过去——原文都够大。分组旁的 ＋ 可以随手补句子。</p></div>';
+          LANG.forEach(function (sec, si) {
+            h +=
+              '<div class="lg-s">' +
+              esc(sec.s) +
+              '<button class="lg-add" data-ag="' +
+              si +
+              '" title="往这组加一句">＋</button></div>';
+            (sec.ps || []).forEach(function (pr, pi) {
               h +=
                 '<div class="lg-r"><div class="jp">' +
                 esc(pr[0]) +
                 '</div><div class="cn2">' +
                 esc(pr[1]) +
-                "</div></div>";
+                '</div><button class="lg-del" data-dp="' +
+                si +
+                "-" +
+                pi +
+                '" title="删除这句">✕</button></div>';
             });
           });
-          $("v-say").innerHTML = h;
+          h += '<button class="add-place" id="say-addg">＋ 新建分组</button>';
+          v.innerHTML = h;
+          Array.prototype.forEach.call(
+            v.querySelectorAll(".lg-add"),
+            function (b) {
+              b.addEventListener("click", function () {
+                addPhraseFlow(+b.getAttribute("data-ag"));
+              });
+            },
+          );
+          Array.prototype.forEach.call(
+            v.querySelectorAll(".lg-del"),
+            function (b) {
+              b.addEventListener("click", function () {
+                var xy = b.getAttribute("data-dp").split("-");
+                delPhrase(+xy[0], +xy[1]);
+              });
+            },
+          );
+          var ag = $("say-addg");
+          if (ag) ag.addEventListener("click", addLangGroupFlow);
+        }
+        function addPhraseFlow(si) {
+          var sec = LANG[si];
+          if (!sec) return;
+          miniForm({
+            title: "＋ 加一句 · " + sec.s,
+            fields: [
+              { k: "jp", label: "原文（递给对方看的那句）", req: 1 },
+              { k: "cn", label: "说明 / 中文", req: 1 },
+            ],
+            ok: "添加",
+            onOk: function (v) {
+              sec.ps.push([v.jp, v.cn]);
+              save();
+              renderSay();
+              toast("🗣️ 已加进「" + esc(sec.s) + "」");
+            },
+          });
+        }
+        function addLangGroupFlow() {
+          miniForm({
+            title: "＋ 新建语言分组",
+            fields: [
+              { k: "s", label: "分组名（可带 emoji，如 🚕 打车）", req: 1 },
+              { k: "jp", label: "第一句 · 原文", req: 1 },
+              { k: "cn", label: "第一句 · 说明 / 中文", req: 1 },
+            ],
+            ok: "创建",
+            onOk: function (v) {
+              LANG.push({ s: v.s, ps: [[v.jp, v.cn]] });
+              save();
+              renderSay();
+              toast("🗣️ 新分组「" + esc(v.s) + "」已就位");
+            },
+          });
+        }
+        function delPhrase(si, pi) {
+          var sec = LANG[si];
+          if (!sec || !sec.ps[pi]) return;
+          if (!confirm("删除这句？\n「" + sec.ps[pi][0] + "」")) return;
+          sec.ps.splice(pi, 1);
+          if (
+            !sec.ps.length &&
+            confirm("「" + sec.s + "」这组已经空了，连分组一起删掉？")
+          ) {
+            LANG.splice(si, 1);
+          }
+          save();
+          renderSay();
+          toast("已删除");
         }
 
         /* ---------- 行程 导入 / 导出 ---------- */
         function applyTrip(j) {
           P = j.P;
           DAYS = j.DAYS;
-          RES = j.res || { booking: [], transit: [] };
+          RES = j.res || j.RES || { sections: [] };
+          if (j.LANG !== undefined) LANG = j.LANG;
+          else if (j.lang !== undefined) LANG = j.lang;
           S = {
             plans: {},
             done: {},
@@ -11559,7 +12436,7 @@
         }
         function exportTrip() {
           var data = {
-            v: 1,
+            v: 2,
             meta: {
               title: "東京口袋帖",
               exported: new Date().toISOString().slice(0, 10),
@@ -11567,6 +12444,7 @@
             P: P,
             DAYS: DAYS,
             res: RES,
+            LANG: LANG,
           };
           var blob = new Blob([JSON.stringify(data, null, 2)], {
             type: "application/json",
@@ -11593,6 +12471,94 @@
             });
         })();
 
+        /* ---------- 情报：自定义组的增删 ---------- */
+        function bindInfoOps() {
+          var v = $("v-info");
+          Array.prototype.forEach.call(
+            v.querySelectorAll("[data-ir]"),
+            function (b) {
+              b.addEventListener("click", function () {
+                addIntelRowFlow(+b.getAttribute("data-ir"));
+              });
+            },
+          );
+          Array.prototype.forEach.call(
+            v.querySelectorAll("[data-ix]"),
+            function (b) {
+              b.addEventListener("click", function () {
+                delIntelSec(+b.getAttribute("data-ix"));
+              });
+            },
+          );
+          Array.prototype.forEach.call(
+            v.querySelectorAll("[data-rd]"),
+            function (b) {
+              b.addEventListener("click", function () {
+                var xy = b.getAttribute("data-rd").split("-");
+                delIntelRow(+xy[0], +xy[1]);
+              });
+            },
+          );
+          var asec = $("if-addsec");
+          if (asec) asec.addEventListener("click", addIntelSecFlow);
+        }
+        function addIntelSecFlow() {
+          miniForm({
+            title: "＋ 添加情报组",
+            fields: [
+              { k: "h", label: "组名（可带 emoji，如 📝 备注）", req: 1 },
+              { k: "k", label: "第一条 · 标签（如 WiFi）", req: 1 },
+              { k: "v", label: "第一条 · 内容", req: 1, multi: 1 },
+            ],
+            ok: "创建",
+            onOk: function (o) {
+              if (!RES.sections) RES.sections = [];
+              RES.sections.push({ h: o.h, rows: [[o.k, esc(o.v)]] });
+              save();
+              renderInfo();
+              toast("🗂 情报组「" + esc(o.h) + "」已创建");
+            },
+          });
+        }
+        function addIntelRowFlow(si) {
+          var sec = (RES.sections || [])[si];
+          if (!sec) return;
+          miniForm({
+            title: "＋ 加一条 · " + (sec.h || ""),
+            fields: [
+              { k: "k", label: "标签（如 密码）", req: 1 },
+              { k: "v", label: "内容", req: 1, multi: 1 },
+            ],
+            ok: "添加",
+            onOk: function (o) {
+              if (!sec.rows) sec.rows = [];
+              sec.rows.push([o.k, esc(o.v)]);
+              save();
+              renderInfo();
+              toast("已加进「" + esc(sec.h || "") + "」");
+            },
+          });
+        }
+        function delIntelRow(si, ri) {
+          var sec = (RES.sections || [])[si];
+          if (!sec || !sec.rows || !sec.rows[ri]) return;
+          if (!confirm("删除「" + sec.rows[ri][0] + "」这条？")) return;
+          sec.rows.splice(ri, 1);
+          save();
+          renderInfo();
+          toast("已删除");
+        }
+        function delIntelSec(si) {
+          var sec = (RES.sections || [])[si];
+          if (!sec) return;
+          if (!confirm("删除整组「" + (sec.h || "") + "」？组里的内容都会一起消失。"))
+            return;
+          RES.sections.splice(si, 1);
+          save();
+          renderInfo();
+          toast("🗑 已删除该情报组");
+        }
+
         /* ---------- 情报 ---------- */
         function renderInfo() {
           var an = RES.anchors || {};
@@ -11608,6 +12574,11 @@
               var p = P[id];
               if (p && p.a && !p.o && !seenA[id]) {
                 seenA[id] = 1;
+                var ex = "";
+                if (p.tr)
+                  ex += '<div class="if-x">🚃 ' + esc(p.tr) + "</div>";
+                if (p.bk)
+                  ex += '<div class="if-x">🎫 ' + esc(p.bk) + "</div>";
                 anchors +=
                   '<div class="if-c"><b>' +
                   esc(d.date) +
@@ -11616,25 +12587,54 @@
                   "</b> · " +
                   esc(p.n) +
                   '<br><span style="color:var(--ink2)">' +
-                  esc(p.d) +
-                  "</span></div>";
+                  esc(p.d || "") +
+                  "</span>" +
+                  ex +
+                  "</div>";
               }
             });
           });
           if (anchors)
             h += '<div class="if-h">' + esc(an.h || "⛩️ 行程锚点") + "</div>" + anchors;
-          // 自定义信息段（全部来自行程数据 res.sections）
-          (RES.sections || []).forEach(function (sec) {
-            h += '<div class="if-h">' + esc(sec.h || "") + "</div>";
+          // 需预约但不是锚点的点，自动汇总一组
+          var books = "";
+          Object.keys(P).forEach(function (id) {
+            var p = P[id];
+            if (!p || p.a || !p.bk) return;
+            books +=
+              '<div class="if-c"><b>' +
+              esc(p.n) +
+              "</b>" +
+              '<div class="if-x">🎫 ' +
+              esc(p.bk) +
+              "</div>" +
+              (p.tr ? '<div class="if-x">🚃 ' + esc(p.tr) + "</div>" : "") +
+              "</div>";
+          });
+          if (books) h += '<div class="if-h">🎫 需预约项目</div>' + books;
+          // 自定义信息段（全部来自行程数据 res.sections，可自行增删）
+          (RES.sections || []).forEach(function (sec, si) {
+            h +=
+              '<div class="if-h">' +
+              esc(sec.h || "") +
+              '<span class="if-ops"><button class="if-op" data-ir="' +
+              si +
+              '" title="往这组加一条">＋</button><button class="if-op" data-ix="' +
+              si +
+              '" title="删除这组">✕</button></span></div>';
             if (sec.rows && sec.rows.length) {
               h += '<div class="if-c">';
-              sec.rows.forEach(function (r) {
+              sec.rows.forEach(function (r, ri) {
                 h +=
                   '<div class="row"><span class="k">' +
                   esc(r[0]) +
                   "</span><span>" +
                   r[1] +
-                  "</span></div>";
+                  '</span><button class="if-op if-rowdel" data-rd="' +
+                  si +
+                  "-" +
+                  ri +
+                  '" title="删除这条">✕</button></div>';
               });
               h += "</div>";
             } else if (sec.text) {
@@ -11642,12 +12642,15 @@
             }
           });
           h +=
+            '<button class="add-place" id="if-addsec">＋ 添加情报组（备注 / 清单…）</button>';
+          h +=
             '<div class="if-h">⚙️ 数据</div>' +
             '<button class="btn-ghost" id="if-home">🧳 返回全部行程</button>' +
             '<button class="btn-ghost" id="if-export">📤 导出行程（生成 JSON 发给同行的人）</button>' +
-            '<button class="btn-ghost" id="if-coach">🏮 重看玩法说明</button>' +
+            '<button class="btn-ghost" id="if-coach">💡 重看玩法说明</button>' +
             '<button class="btn-ghost btn-danger" id="if-reset">重置行程改动（恢复到当前行程默认）</button>';
           $("v-info").innerHTML = h;
+          bindInfoOps();
           $("if-home").addEventListener("click", function () {
             flushSave();
             location.href = "index.html";
@@ -11750,6 +12753,10 @@
           P = doc.P;
           DAYS = doc.DAYS;
           if (doc.RES) RES = doc.RES;
+          if (doc.LANG !== undefined) {
+            LANG = doc.LANG;
+            renderSay();
+          }
           if (doc.S && doc.S.plans) {
             S = doc.S;
             if (!S.done) S.done = {};
@@ -11772,6 +12779,7 @@
           }, 60);
         }
         window.PT_applyDoc = PT_applyDoc;
+        window.renderPresence = renderPresence; /* 同 PT_applyDoc：暴露给外部（调试/测试）*/
         /* 订阅：初次用最新版覆盖本地占位（好友新设备打开共享行程时）；
            之后同行实时编辑会推送过来自动刷新。本地模式下 connect 是空操作。
            关键：必须等 _ptReady（后端/会话就绪）后再 connect，否则云端 sb 尚未建立，
@@ -11784,6 +12792,7 @@
                 PT_applyDoc(doc);
                 if (info && !info.initial) toast("↻ 行程已被同行更新");
               },
+              onPresence: renderPresence,
               onError: function (err) {
                 /* 本地已有缓存就静默（离线也能用）；否则说明这份云端行程读不到 */
                 if (window.PT && PT.loadDocSync && PT.loadDocSync(_tripId)) return;
