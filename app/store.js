@@ -436,6 +436,7 @@
     var self = this;
     var nextVer = (this._ver[id] || 1) + 1;
     Cache.setDoc(id, doc); // 先更新本地缓存（离线也不丢）
+    if (!this.sb) return Promise.resolve(); // 云端未就绪：本地已存，跳过云端写
     return this.sb
       .from("trips")
       .update({ data: doc, version: nextVer, updated_at: now() })
@@ -497,12 +498,25 @@
   CloudBackend.prototype.connect = function (id, opt) {
     var self = this;
     opt = opt || {};
-    // 先拉一次最新，若比缓存新就回调
+    // 防御：sb 尚未建立（init 未完成）时不要静默失败，给出可诊断的错误
+    if (!this.sb) {
+      if (opt.onError)
+        opt.onError(new Error("云端未就绪（Supabase 客户端未初始化）"));
+      return;
+    }
+    // 先拉一次最新，若比缓存新就回调；失败则上报，便于共享排障
     this.loadDoc(id).then(
       function (doc) {
         if (opt.onRemote) opt.onRemote(doc, { initial: true });
       },
-      function () {},
+      function (err) {
+        if (opt.onError) opt.onError(err);
+        else
+          console.warn(
+            "[PT] connect: 读取行程失败 →",
+            (err && err.message) || err,
+          );
+      },
     );
     if (this._channels[id]) return;
     var ch = this.sb

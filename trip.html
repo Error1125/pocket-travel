@@ -10158,6 +10158,12 @@
           return;
         }
         if (window.PT && PT._cache) PT._cache.setLast(_tripId);
+        /* 后端就绪 promise：云端模式下这一步会建立 Supabase 客户端并恢复登录会话。
+           必须先 await 它，之后的云端 loadDoc / saveDoc 才有可用的 sb 客户端——
+           否则好友在新设备打开共享行程只会看到示例数据，本机的编辑也同步不到云端。
+           init 是幂等的（内部缓存同一个 promise），在别的页面调过也不冲突。 */
+        var _ptReady =
+          window.PT && PT.init ? PT.init() : Promise.resolve();
         var _doc = null;
         try {
           _doc = window.PT ? PT.loadDocSync(_tripId) : null;
@@ -11767,17 +11773,44 @@
         }
         window.PT_applyDoc = PT_applyDoc;
         /* 订阅：初次用最新版覆盖本地占位（好友新设备打开共享行程时）；
-           之后同行实时编辑会推送过来自动刷新。本地模式下 connect 是空操作。 */
-        if (window.PT && PT.connect) {
+           之后同行实时编辑会推送过来自动刷新。本地模式下 connect 是空操作。
+           关键：必须等 _ptReady（后端/会话就绪）后再 connect，否则云端 sb 尚未建立，
+           loadDoc 会抛错被吞掉，导致共享行程只显示示例数据。 */
+        function startSync() {
+          if (!(window.PT && PT.connect)) return;
           try {
             PT.connect(_tripId, {
               onRemote: function (doc, info) {
                 PT_applyDoc(doc);
                 if (info && !info.initial) toast("↻ 行程已被同行更新");
               },
+              onError: function (err) {
+                /* 本地已有缓存就静默（离线也能用）；否则说明这份云端行程读不到 */
+                if (window.PT && PT.loadDocSync && PT.loadDocSync(_tripId)) return;
+                var msg = (err && err.message) || "";
+                toast(
+                  /row|PGRST|permission|policy/i.test(msg)
+                    ? "读取这份行程失败：可能未加入或无权限"
+                    : "行程同步失败，请检查网络后重试",
+                );
+              },
             });
           } catch (e) {}
         }
+        _ptReady.then(function () {
+          /* 云端模式下没有登录会话就读不了云端行程；本机也没缓存时回首页登录 */
+          if (
+            window.PT &&
+            PT.isCloud &&
+            PT.isCloud() &&
+            !PT.getUser() &&
+            !(PT.loadDocSync && PT.loadDocSync(_tripId))
+          ) {
+            location.replace("index.html");
+            return;
+          }
+          startSync();
+        }, startSync);
       })();
     </script>
   </body>
