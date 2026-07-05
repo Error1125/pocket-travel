@@ -2090,6 +2090,8 @@
         display: none;
         align-items: flex-end;
         justify-content: center;
+        box-sizing: border-box;
+        padding-top: calc(var(--sa-t) + 72px);
         background: rgba(23, 34, 51, 0.35);
         backdrop-filter: blur(3px);
         -webkit-backdrop-filter: blur(3px);
@@ -2099,7 +2101,7 @@
       }
       .pcard {
         width: min(560px, 100vw);
-        max-height: min(92vh, calc(100vh - var(--sa-t) - 12px));
+        max-height: calc(100vh - var(--sa-t) - 72px);
         overflow-y: auto;
         overflow-x: hidden;
         background: var(--paper);
@@ -2107,6 +2109,11 @@
         padding: 18px 18px calc(16px + var(--sa-b));
         box-shadow: 0 -12px 40px rgba(23, 34, 51, 0.25);
         box-sizing: border-box;
+      }
+      @supports (height: 100dvh) {
+        .pcard {
+          max-height: calc(100dvh - var(--sa-t) - 72px);
+        }
       }
       .pcard .pt {
         font-size: 17px;
