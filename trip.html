@@ -2099,7 +2099,7 @@
       }
       .pcard {
         width: min(560px, 100vw);
-        max-height: 84vh;
+        max-height: min(92vh, calc(100vh - var(--sa-t) - 12px));
         overflow-y: auto;
         overflow-x: hidden;
         background: var(--paper);
@@ -2154,6 +2154,13 @@
       .pfield textarea:focus {
         border-color: var(--blue);
       }
+      .phelp {
+        margin-top: 5px;
+        font-size: 11.5px;
+        font-weight: 700;
+        color: var(--ink3);
+        line-height: 1.45;
+      }
       .ll-row {
         display: flex;
         gap: 8px;
@@ -2193,6 +2200,35 @@
         background: var(--ink);
         color: #fff;
         border-color: var(--ink);
+      }
+      .more-fields {
+        margin: 2px 0 10px;
+        border: 1.5px solid rgba(27, 37, 48, 0.1);
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.55);
+        overflow: hidden;
+      }
+      .more-fields summary {
+        list-style: none;
+        padding: 10px 12px;
+        font-size: 12.5px;
+        font-weight: 900;
+        color: var(--ink);
+        cursor: pointer;
+      }
+      .more-fields summary::-webkit-details-marker {
+        display: none;
+      }
+      .more-fields summary:after {
+        content: "⌄";
+        float: right;
+        color: var(--ink3);
+      }
+      .more-fields[open] summary:after {
+        content: "⌃";
+      }
+      .more-body {
+        padding: 0 12px 12px;
       }
       .anchor-line {
         display: flex;
@@ -10827,6 +10863,7 @@
           }
           var p = opt.draft || (id ? P[id] : {}) || {};
           var isAnchor = !!p.a;
+          var hasMore = !!(p.j || p.t || p.tr || p.bk);
           var h =
             '<h3 class="pt">' +
             (isNew ? "＋ 添加地点" : "✎ 编辑 · " + esc((P[id] || p).n || "")) +
@@ -10834,10 +10871,6 @@
           h +=
             '<div class="pfield"><label>名称 <em>*</em></label><input id="pe-n" value="' +
             esc(p.n || "") +
-            '"></div>';
-          h +=
-            '<div class="pfield"><label>当地语言名（问路时给人看，可选）</label><input id="pe-j" value="' +
-            esc(p.j || "") +
             '"></div>';
           h +=
             '<div class="pfield"><label>类别</label>' +
@@ -10850,16 +10883,6 @@
             esc(p.p || "") +
             '"></div>';
           h +=
-            '<div class="pfield half"><label>时间（锚点建议填，如 14:30）</label><input id="pe-t" value="' +
-            esc(p.t || "") +
-            '"></div><div class="pfield half"><label>交通方式（如 银座线→浅草）</label><input id="pe-tr" value="' +
-            esc(p.tr || "") +
-            '"></div>';
-          h +=
-            '<div class="pfield"><label>预约情报（需预约的填：平台 / 订单号 / 时段）</label><input id="pe-bk" value="' +
-            esc(p.bk || "") +
-            '"></div>';
-          h +=
             '<div class="pfield"><label>描述</label><textarea id="pe-d" rows="2">' +
             esc(p.d || "") +
             "</textarea></div>";
@@ -10868,7 +10891,7 @@
             (p.la != null ? p.la : "") +
             '"><input id="pe-ln" inputmode="decimal" placeholder="经度" value="' +
             (p.ln != null ? p.ln : "") +
-            '"><button type="button" id="pe-pick">📍 地图选点</button></div></div>';
+            '"><button type="button" id="pe-pick">📍 地图选点</button></div><div class="phelp">手机上建议直接点地图选点，不必手填坐标。</div></div>';
           h +=
             '<label class="anchor-line"><input type="checkbox" id="pe-a"' +
             (isAnchor ? " checked" : "") +
@@ -10876,6 +10899,24 @@
             '<div class="anchor-warn" id="pe-warn"' +
             (isAnchor ? "" : ' style="display:none"') +
             ">⚠️ 你正在添加的是<b>重要锚点</b>：它会钉死在当天行程里、显示在情报页，之后的修改和删除都需要再次确认。</div>";
+          h +=
+            '<details class="more-fields" id="pe-more"' +
+            (hasMore || isAnchor ? " open" : "") +
+            '><summary>更多信息（当地名 / 时间 / 交通 / 预约）</summary><div class="more-body">';
+          h +=
+            '<div class="pfield"><label>当地名</label><input id="pe-j" placeholder="问路时给人看" value="' +
+            esc(p.j || "") +
+            '"></div>';
+          h +=
+            '<div class="pfield half"><label>时间</label><input id="pe-t" placeholder="14:30" value="' +
+            esc(p.t || "") +
+            '"></div><div class="pfield half"><label>交通</label><input id="pe-tr" placeholder="银座线 → 浅草" value="' +
+            esc(p.tr || "") +
+            '"></div>';
+          h +=
+            '<div class="pfield"><label>预约情报</label><input id="pe-bk" placeholder="平台 / 订单号 / 时段" value="' +
+            esc(p.bk || "") +
+            '"></div></div></details>';
           if (!isNew)
             h +=
               '<button class="btn-ghost pdel-row" id="pe-del">🗑 删除这个地点</button>';
@@ -10902,6 +10943,7 @@
           );
           $("pe-a").addEventListener("change", function () {
             $("pe-warn").style.display = this.checked ? "" : "none";
+            if (this.checked && $("pe-more")) $("pe-more").open = true;
             if (this.checked) toast("⚠️ 注意：你正在把它设为<b>重要锚点</b>");
           });
           function grab() {
