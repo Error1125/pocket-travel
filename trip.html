@@ -2116,9 +2116,16 @@
         }
       }
       .pcard .pt {
+        position: sticky;
+        top: -18px;
+        z-index: 4;
         font-size: 17px;
         font-weight: 900;
-        margin: 0 0 12px;
+        margin: -18px -18px 12px;
+        padding: 18px 18px 12px;
+        background: var(--paper);
+        border-radius: 22px 22px 0 0;
+        box-shadow: 0 12px 18px -18px rgba(23, 34, 51, 0.34);
         color: var(--ink);
       }
       .pfield {
@@ -10745,13 +10752,20 @@
 
         /* ---------- 通用小表单弹层 ---------- */
         var _pick = null; /* 地图选点模式：{cb:fn} */
+        var _maskBeforeClose = null;
         function openMask(html) {
+          _maskBeforeClose = null;
           $("pcard").innerHTML = html;
           $("pmask").classList.add("on");
         }
-        function closeMask() {
+        function closeMask(opt) {
+          opt = opt || {};
+          if (!opt.force && _maskBeforeClose && _maskBeforeClose() === false)
+            return false;
           $("pmask").classList.remove("on");
           $("pcard").innerHTML = "";
+          _maskBeforeClose = null;
+          return true;
         }
         $("pmask").addEventListener("click", function (e) {
           if (e.target === $("pmask")) closeMask();
@@ -10969,14 +10983,36 @@
               a: $("pe-a").checked,
             };
           }
+          function dirtySnapshot() {
+            return JSON.stringify({
+              n: $("pe-n").value.trim(),
+              j: $("pe-j").value.trim(),
+              c: selCat,
+              ar: $("pe-ar").value.trim(),
+              p: $("pe-p").value.trim(),
+              t: $("pe-t").value.trim(),
+              tr: $("pe-tr").value.trim(),
+              bk: $("pe-bk").value.trim(),
+              d: $("pe-d").value.trim(),
+              la: $("pe-la").value.trim(),
+              ln: $("pe-ln").value.trim(),
+              a: $("pe-a").checked,
+            });
+          }
+          var initialEditorState = opt.initialState || dirtySnapshot();
+          _maskBeforeClose = function () {
+            if (dirtySnapshot() === initialEditorState) return true;
+            return confirm("放弃本次编辑？未保存的修改会丢失。");
+          };
           $("pe-pick").addEventListener("click", function () {
             var draft = grab();
-            closeMask();
+            closeMask({ force: true });
             function reopen() {
               openEditor(id, {
                 mode: opt.mode,
                 dayId: opt.dayId,
                 draft: draft,
+                initialState: initialEditorState,
               });
             }
             _pick = {
@@ -11076,7 +11112,7 @@
               if (S.plans[day.id].indexOf(id) < 0) S.plans[day.id].push(id);
             }
           }
-          closeMask();
+          closeMask({ force: true });
           save();
           renderAll();
           renderInfo();
@@ -11124,7 +11160,7 @@
           });
           delete S.done[id];
           if (focusId === id) focusId = null;
-          closeMask();
+          closeMask({ force: true });
           if (sheetId === id) closeSheet();
           save();
           renderAll();
