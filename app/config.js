@@ -28,4 +28,25 @@ window.PT_CONFIG = {
 
   /* 品牌名，显示在首页顶部 */
   APP_NAME: "口袋旅行",
+
+  /* ── 附近推荐 & 地点图片（可选功能，断网/出错都会静默降级）──────────
+   * PLACES_PROVIDER:
+   *   "demo"   零配置演示数据，先看交互效果（默认）
+   *   "amap"   高德周边搜索（国内数据全，图片是可保存的直链）→ 填 AMAP_WEB_KEY
+   *   "google" Google Places（海外数据全，图片引用会过期、展示时现取，
+   *            key 记得在控制台按 HTTP referrer 限制到你的域名）→ 填 GOOGLE_PLACES_KEY
+   *   ""       彻底关闭，界面上不出现任何系统推荐
+   *
+   * ⚠️ 高德 Web 服务 key 无法按域名限制，直接放公开仓库会被人盗刷配额。
+   *    本地自用没问题；正式上线请把 PLACES_PROXY 指向自己的中转
+   *    （Supabase Edge Function 即可），key 留在服务端。 */
+  PLACES_PROVIDER: "demo",
+  AMAP_WEB_KEY: "",
+  GOOGLE_PLACES_KEY: "",
+  PLACES_PROXY: "",
+  PLACES_RADIUS: 900, /* 推荐搜索半径（米）*/
+
+  /* ── AI 行程规划（预留，见 app/ai-planner.js 的接口约定）──
+   * 填你自己的转发地址后 PTAI.plan() 即可用；留空 = 未接入。 */
+  AI_ENDPOINT: "",
 };

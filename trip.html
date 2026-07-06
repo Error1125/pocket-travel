@@ -1915,6 +1915,87 @@
         font-weight: 900;
       }
 
+      /* ---------- 系统推荐（✨ 紫色虚线 = 系统，实线 = 你自己的）---------- */
+      .nc.sys {
+        border: 1.5px dashed rgba(142, 91, 216, 0.55);
+        background: linear-gradient(160deg, #fbf8ff, #f4edfd);
+      }
+      .nc .nph {
+        flex: none;
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        object-fit: cover;
+        background: rgba(142, 91, 216, 0.12);
+      }
+      .nc.sys .na {
+        background: rgba(142, 91, 216, 0.14);
+        color: #7c4fc4;
+        font-size: 13px;
+      }
+      .sys-h {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin: 15px 2px 8px;
+        font-size: 12.5px;
+        font-weight: 900;
+        color: #7c4fc4;
+      }
+      .sys-h small {
+        font-weight: 700;
+        color: var(--ink3);
+        font-size: 10px;
+      }
+      .nload {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--ink3);
+        padding: 4px 2px 8px;
+      }
+      .bb.sys .bb-c {
+        position: relative;
+        border-style: dashed;
+      }
+      .bb.sys .bb-c .bsp {
+        position: absolute;
+        top: -5px;
+        right: -7px;
+        font-size: 13px;
+        font-style: normal;
+        filter: drop-shadow(0 1px 2px rgba(23, 34, 51, 0.35));
+      }
+      .bb.sys .bb-n {
+        background: linear-gradient(160deg, #f6efff, #efe4fc);
+        color: #5d3f96;
+      }
+      .sphoto {
+        display: block;
+        width: 100%;
+        max-height: 172px;
+        object-fit: cover;
+        border-radius: 14px;
+        margin: 2px 0 10px;
+        background: rgba(142, 91, 216, 0.08);
+      }
+      .sph-cr {
+        margin: -6px 0 10px;
+        font-size: 9.5px;
+        font-weight: 700;
+        color: var(--ink3);
+      }
+      .rec-src {
+        margin-top: 12px;
+        font-size: 10.5px;
+        font-weight: 700;
+        color: var(--ink3);
+      }
+      .card .sy-tag {
+        font-size: 10px;
+        font-weight: 800;
+        color: #7c4fc4;
+      }
+
       /* ---------- Toast ---------- */
       #toast {
         position: fixed;
@@ -10377,6 +10458,8 @@
     <script src="vendor/supabase.js"></script>
     <script src="app/config.js"></script>
     <script src="app/store.js"></script>
+    <script src="app/places-api.js"></script>
+    <script src="app/ai-planner.js"></script>
     <script>
       /* ===== 口袋旅行 v2 · 数据 ===== */
       var CAT = {
@@ -10884,7 +10967,7 @@
           }
           var p = opt.draft || (id ? P[id] : {}) || {};
           var isAnchor = !!p.a;
-          var hasMore = !!(p.j || p.t || p.tr || p.bk);
+          var hasMore = !!(p.j || p.t || p.tr || p.bk || p.ph);
           var h =
             '<h3 class="pt">' +
             (isNew ? "＋ 添加地点" : "✎ 编辑 · " + esc((P[id] || p).n || "")) +
@@ -10937,6 +11020,10 @@
           h +=
             '<div class="pfield"><label>预约情报</label><input id="pe-bk" placeholder="平台 / 订单号 / 时段" value="' +
             esc(p.bk || "") +
+            '"></div>';
+          h +=
+            '<div class="pfield"><label>图片链接</label><input id="pe-ph" placeholder="https://…（系统推荐收编时会自动带上）" value="' +
+            esc(p.ph || "") +
             '"></div></div></details>';
           if (!isNew)
             h +=
@@ -10977,6 +11064,7 @@
               t: $("pe-t").value.trim(),
               tr: $("pe-tr").value.trim(),
               bk: $("pe-bk").value.trim(),
+              ph: $("pe-ph").value.trim(),
               d: $("pe-d").value.trim(),
               la: parseFloat($("pe-la").value),
               ln: parseFloat($("pe-ln").value),
@@ -10993,6 +11081,7 @@
               t: $("pe-t").value.trim(),
               tr: $("pe-tr").value.trim(),
               bk: $("pe-bk").value.trim(),
+              ph: $("pe-ph").value.trim(),
               d: $("pe-d").value.trim(),
               la: $("pe-la").value.trim(),
               ln: $("pe-ln").value.trim(),
@@ -11097,8 +11186,14 @@
           if (v.t) np.t = v.t;
           if (v.tr) np.tr = v.tr;
           if (v.bk) np.bk = v.bk;
+          if (v.ph) np.ph = v.ph;
           if (v.a) np.a = 1;
           if (old.o) np.o = old.o;
+          /* 系统推荐收编来的出处字段：编辑时静默保留 */
+          if (old.pr) np.pr = old.pr;
+          if (old.pa) np.pa = old.pa;
+          if (old.ref) np.ref = old.ref;
+          if (old.sy) np.sy = old.sy;
           P[id] = np;
           var day = dget((opt && opt.dayId) || cur);
           if (isNew && day) {
@@ -11409,6 +11504,351 @@
           tmpMk = null;
         }
 
+        /* ==================================================================
+         * 系统推荐（✨）—— 数据来自 window.PTPlaces（app/places-api.js）
+         * 设计原则：
+         *  · 未收编的推荐永远不进随缘池 tab、不进行程文档，只是「飘着的建议」
+         *  · 用户点了「加入行程 / 收进随缘池」那一刻才 adoptRec() 落库，
+         *    落库后带 sy:1 + ref，之后它就是用户自己的地点，可编辑可删除
+         *  · 断网 / 没配 key / 接口挂了 → 界面静默降级，绝不打扰
+         * ================================================================== */
+        var SYSP = window.PTPlaces || null;
+        var sysMem = {}; /* originId → 本次会话拉到的原始推荐列表 */
+
+        function placePhotoSrc(p) {
+          if (!p) return "";
+          if (p.ph) return p.ph;
+          if (p.pr && SYSP) return SYSP.photoUrl(p, 800);
+          return "";
+        }
+        function fmtDist(m) {
+          if (!isFinite(m)) return "";
+          return m >= 1000
+            ? (m / 1000).toFixed(1) + "km"
+            : Math.max(10, Math.round(m / 10) * 10) + "m";
+        }
+        function isDupRec(rec) {
+          for (var id in P) {
+            var q = P[id];
+            if (!q) continue;
+            if (rec.ref && q.ref === rec.ref) return true;
+            if (q.n && q.n === rec.n) return true;
+            if (
+              isFinite(q.la) &&
+              isFinite(rec.la) &&
+              dist(q, rec) < 40
+            )
+              return true;
+          }
+          return false;
+        }
+        function recsFor(baseId) {
+          var p = P[baseId];
+          if (!SYSP || !SYSP.enabled() || !p || !isFinite(p.la))
+            return Promise.resolve([]);
+          if (sysMem[baseId]) return Promise.resolve(sysMem[baseId]);
+          return SYSP.nearby({ la: p.la, ln: p.ln, limit: 10 })
+            .then(function (rs) {
+              sysMem[baseId] = rs || [];
+              return sysMem[baseId];
+            })
+            .catch(function () {
+              return [];
+            });
+        }
+
+        /* --- 详情卡里的「✨ 附近还可随缘 · 系统推荐」横滑区 --- */
+        function loadSysNears(base, sheetPid) {
+          var host = $("sys-near");
+          if (!host) return;
+          if (!SYSP || !SYSP.enabled() || !P[base]) {
+            host.innerHTML = "";
+            return;
+          }
+          host.innerHTML =
+            '<div class="sys-h">✨ 附近还可随缘 · 系统推荐 <small>' +
+            SYSP.providerName() +
+            '</small></div><div class="nload">正在打听附近…</div>';
+          recsFor(base).then(function (raw) {
+            /* 卡片可能已经翻页/关闭，别往过期的 DOM 里塞东西 */
+            if (!document.body.contains(host) || sheetId !== sheetPid) return;
+            var recs = raw
+              .filter(function (r) {
+                return !isDupRec(r);
+              })
+              .slice(0, 6);
+            if (!recs.length) {
+              host.innerHTML = "";
+              return;
+            }
+            var h =
+              '<div class="sys-h">✨ 附近还可随缘 · 系统推荐 <small>' +
+              SYSP.providerName() +
+              ' · 点开看，收下才入库</small></div><div class="nears">';
+            recs.forEach(function (r, i) {
+              var pu = SYSP.photoUrl(r, 96);
+              h +=
+                '<div class="nc sys" data-ri="' +
+                i +
+                '">' +
+                (pu
+                  ? '<img class="nph" src="' +
+                    pu +
+                    '" alt="" loading="lazy" onerror="this.outerHTML=\'<span class=ne>' +
+                    CAT[r.c].em +
+                    "</span>'\">"
+                  : '<span class="ne">' + CAT[r.c].em + "</span>") +
+                '<span><span class="nn">' +
+                esc(r.n) +
+                '</span><br><span class="nd">' +
+                fmtDist(r.dist) +
+                " · " +
+                (r.p ? esc(r.p) : CAT[r.c].cn) +
+                '</span></span><button class="na" data-pool="' +
+                i +
+                '" title="收进随缘池">🎐</button></div>';
+            });
+            h += "</div>";
+            host.innerHTML = h;
+            host.onclick = function (e) {
+              var t = e.target;
+              var pool =
+                t.getAttribute && t.getAttribute("data-pool");
+              if (pool != null && pool !== "") {
+                e.stopPropagation();
+                recToPool(recs[+pool], base);
+                loadSysNears(base, sheetPid); /* 收下的从推荐区消失 */
+                return;
+              }
+              var nc = t.closest ? t.closest(".nc.sys") : null;
+              if (nc) openRecSheet(recs[+nc.getAttribute("data-ri")], base);
+            };
+          });
+        }
+
+        /* --- 推荐详情：复用底部卡片外壳，给两个去向按钮 --- */
+        function openRecSheet(rec, base) {
+          dismissBubbles();
+          sheetId = null;
+          sheetOrigin = base || null;
+          var c = CAT[rec.c] || CAT.spot;
+          var chips =
+            '<span class="sb-em" style="--tint:#8E5BD826">' +
+            c.em +
+            '</span><span class="chip" style="color:#7C4FC4;border-color:#8E5BD855">✨ 系统推荐</span><span class="chip">' +
+            c.cn +
+            "</span>";
+          if (rec.dist)
+            chips += '<span class="chip">' + fmtDist(rec.dist) + "</span>";
+          if (rec.p) chips += '<span class="chip">' + esc(rec.p) + "</span>";
+          $("sbrow").innerHTML = chips;
+          $("stitle").innerHTML = esc(rec.n);
+          var b = "";
+          var pu = SYSP ? SYSP.photoUrl(rec, 800) : "";
+          if (pu) {
+            b +=
+              '<img class="sphoto" src="' +
+              pu +
+              '" alt="" loading="lazy" onerror="this.style.display=\'none\'">';
+            if (rec.pa)
+              b += '<div class="sph-cr">📷 ' + esc(rec.pa) + "</div>";
+          }
+          b += '<p class="sd">' + esc(rec.d || "") + "</p>";
+          b += '<div class="sbtns">';
+          b +=
+            '<button class="b-main" id="rs-plan">✚ 加入 ' +
+            dget(cur).date +
+            " 行程</button>";
+          b += '<button class="b-sub" id="rs-pool">🎐 收进随缘池</button>';
+          b += "</div>";
+          b +=
+            '<div class="rec-src">来源：' +
+            (SYSP ? SYSP.providerName() : "") +
+            " · 收下后就是你的地点了，随时可 ✎ 编辑</div>";
+          $("sbody").innerHTML = b;
+          $("rs-plan").onclick = function () {
+            var id = recToPlan(rec, base);
+            if (id) openSheet(id, { keep: true, origin: base });
+          };
+          $("rs-pool").onclick = function () {
+            var id = recToPool(rec, base);
+            if (id) openSheet(id, { keep: true, origin: base });
+          };
+          $("sheet").classList.add("on");
+        }
+
+        /* --- 收编：推荐 → 正式地点（只在用户点头时发生）--- */
+        function adoptRec(rec, base) {
+          for (var ex in P) if (P[ex] && P[ex].ref === rec.ref) return ex;
+          var id =
+            "r" +
+            Date.now().toString(36) +
+            Math.floor(Math.random() * 36).toString(36);
+          var np = {
+            n: rec.n,
+            c: CAT[rec.c] ? rec.c : "spot",
+            la: rec.la,
+            ln: rec.ln,
+            ar:
+              rec.ar ||
+              (P[base] && P[base].ar) ||
+              "系统推荐",
+            d: rec.d || "",
+            sy: 1,
+            ref: rec.ref,
+          };
+          if (rec.p) np.p = rec.p;
+          if (rec.ph) np.ph = rec.ph;
+          if (rec.phref) np.pr = rec.phref;
+          if (rec.pa) np.pa = rec.pa;
+          P[id] = np;
+          return id;
+        }
+        function recToPool(rec, base) {
+          var day = dget(cur);
+          if (!day) {
+            toast("先在顶栏 ＋ 添加一天，才能收集备选地点");
+            return null;
+          }
+          var id = adoptRec(rec, base);
+          if (day.pool.indexOf(id) < 0 && S.plans[day.id].indexOf(id) < 0)
+            day.pool.push(id);
+          save();
+          renderAll();
+          if (tab === "pool") renderPool();
+          toast("🎐 已收进随缘池 · " + esc(rec.n));
+          return id;
+        }
+        function recToPlan(rec, base) {
+          var id = adoptRec(rec, base);
+          var after =
+            base && S.plans[cur].indexOf(base) >= 0 ? base : null;
+          addToPlan(id, after);
+          return id;
+        }
+
+        /* --- 系统泡泡：晚半拍浮出，虚线紫圈 + ✨ 角标，拖法与普通泡泡相同 --- */
+        function queueSysBubbles(originId) {
+          if (!SYSP || !SYSP.enabled()) return;
+          recsFor(originId).then(function (raw) {
+            if (bubOrigin !== originId) return; /* 泡泡已换主/已收起 */
+            var recs = raw
+              .filter(function (r) {
+                return !isDupRec(r);
+              })
+              .slice(0, 3);
+            spawnSysBubbles(originId, recs);
+          });
+        }
+        function spawnSysBubbles(originId, recs) {
+          if (!recs.length) return;
+          var p = P[originId],
+            sp;
+          if (!p) return;
+          try {
+            sp = map.latLngToContainerPoint([p.la, p.ln]);
+          } catch (e) {
+            return;
+          }
+          var angs =
+            recs.length === 1
+              ? [-90]
+              : recs.length === 2
+                ? [-138, -42]
+                : [-160, -90, -20];
+          recs.forEach(function (rec, i) {
+            var ang = (angs[i] * Math.PI) / 180,
+              r = 182;
+            var x = sp.x + Math.cos(ang) * r,
+              y = sp.y + Math.sin(ang) * r - 8;
+            x = Math.max(42, Math.min(vw() - 42, x));
+            y = Math.max(topH() + 52, Math.min(dTop - 46, y));
+            var c = CAT[rec.c] || CAT.spot;
+            var el = document.createElement("div");
+            el.className = "bb sys";
+            el.style.left = x + "px";
+            el.style.top = y + "px";
+            el.style.animationDelay =
+              240 + i * 60 + "ms," + (740 + i * 60) + "ms";
+            el.innerHTML =
+              '<div class="bb-c" style="--cc:#8E5BD8"><span>' +
+              c.em +
+              '</span><i class="bsp">✨</i></div><div class="bb-n">' +
+              esc(rec.n) +
+              "</div>";
+            attachSysBubble(el, rec, x, y);
+            bubHost.appendChild(el);
+            bubbles.push(el);
+          });
+        }
+        function attachSysBubble(el, rec, x0, y0) {
+          el.addEventListener("pointerdown", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            try {
+              el.setPointerCapture(e.pointerId);
+            } catch (err) {}
+            var sx = e.clientX,
+              sy = e.clientY,
+              t0 = Date.now(),
+              drag = false,
+              sheetWasOpen = false;
+            function mv(ev) {
+              var dx = ev.clientX - sx,
+                dy = ev.clientY - sy;
+              if (!drag && dx * dx + dy * dy > 110) {
+                drag = true;
+                el.classList.add("drag");
+                showDrop();
+                sheetWasOpen = $("sheet").classList.contains("on");
+                if (sheetWasOpen) $("sheet").classList.remove("on");
+                snapTo(snapPeek);
+              }
+              if (drag) {
+                el.style.left = x0 + dx + "px";
+                el.style.top = y0 + dy + "px";
+                $("dropbar").classList.toggle(
+                  "hot",
+                  ev.clientY > dropZoneY(),
+                );
+              }
+            }
+            function up(ev) {
+              el.removeEventListener("pointermove", mv);
+              el.removeEventListener("pointerup", up);
+              el.removeEventListener("pointercancel", up);
+              if (drag) {
+                hideDrop();
+                if (ev.clientY > dropZoneY()) {
+                  if (el.parentNode) el.parentNode.removeChild(el);
+                  bubbles = bubbles.filter(function (b) {
+                    return b !== el;
+                  });
+                  var origin = bubOrigin;
+                  recToPlan(rec, origin);
+                  dismissBubbles();
+                } else {
+                  el.style.transition =
+                    "left .3s cubic-bezier(.2,.9,.3,1.25), top .3s cubic-bezier(.2,.9,.3,1.25)";
+                  el.style.left = x0 + "px";
+                  el.style.top = y0 + "px";
+                  setTimeout(function () {
+                    el.style.transition = "";
+                    el.classList.remove("drag");
+                  }, 320);
+                  if (sheetWasOpen && sheetId)
+                    $("sheet").classList.add("on");
+                }
+              } else if (Date.now() - t0 < 600) {
+                openRecSheet(rec, bubOrigin);
+              }
+            }
+            el.addEventListener("pointermove", mv);
+            el.addEventListener("pointerup", up);
+            el.addEventListener("pointercancel", up);
+          });
+        }
+
         /* ---------- 随缘泡泡 ---------- */
         var bubHost = document.createElement("div");
         bubHost.id = "bub";
@@ -11449,7 +11889,9 @@
           dismissBubbles();
           var ids = candidates(id);
           if (!ids.length) {
-            bubOrigin = null;
+            /* 自己的池子附近没货 → 正好让系统推荐顶上 */
+            bubOrigin = id;
+            queueSysBubbles(id);
             return;
           }
           bubOrigin = id;
@@ -11490,6 +11932,7 @@
             bubHost.appendChild(el);
             bubbles.push(el);
           });
+          queueSysBubbles(id);
         }
         function dismissBubbles() {
           if (bubbles.length) {
@@ -11688,6 +12131,14 @@
             esc(p.n) + (p.j ? "<small>" + esc(p.j) + "</small>" : "");
 
           var b = "";
+          var _sp = placePhotoSrc(p);
+          if (_sp) {
+            b +=
+              '<img class="sphoto" src="' +
+              _sp +
+              '" alt="" loading="lazy" onerror="this.style.display=\'none\';var c=this.nextElementSibling;if(c&&c.className===\'sph-cr\')c.style.display=\'none\'">';
+            if (p.pa) b += '<div class="sph-cr">📷 ' + esc(p.pa) + "</div>";
+          }
           b += '<p class="sd">' + esc(p.d || "") + "</p>";
           b += '<div class="sbtns">';
           if (inPlan) {
@@ -11748,7 +12199,9 @@
             });
             b += "</div>";
           }
+          b += '<div id="sys-near"></div>';
           $("sbody").innerHTML = b;
+          loadSysNears(base, id);
 
           var el;
           if ((el = $("sh-add")))
@@ -12350,6 +12803,7 @@
                 "</span></div>" +
                 '<div class="cmid"><div class="cn">' +
                 esc(p.n) +
+                (p.sy ? ' <span class="sy-tag">✨</span>' : "") +
                 (p.p
                   ? ' <span style="font-weight:600;color:#98a2ad;font-size:11px">' +
                     esc(p.p) +
