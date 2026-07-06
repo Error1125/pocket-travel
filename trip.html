@@ -2490,30 +2490,131 @@
         opacity: 0.5;
       }
 
-      /* ---------- AI 旅行搭子（v5.1 演示 UI） ---------- */
+      /* ---------- AI 旅行搭子（v5.2 液态球 + 可拖动） ---------- */
       #aiFab {
         position: fixed;
-        right: 15px;
-        bottom: calc(var(--sa-b) + 152px);
+        left: 0;
+        top: 0;
         z-index: 674;
-        height: 42px;
-        padding: 0 14px;
+        width: 78px;
+        height: 78px;
+        padding: 0;
         border: 0;
-        border-radius: 999px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 13.5px;
-        font-weight: 900;
+        border-radius: 50%;
+        display: block;
         color: #fff;
-        background: linear-gradient(145deg, #8e5bd8, #4d7cff);
-        box-shadow: 0 12px 26px rgba(77, 124, 255, 0.33);
+        background:
+          radial-gradient(circle at 30% 25%, rgba(255,255,255,0.55) 0 10%, transparent 30%),
+          radial-gradient(circle at 68% 70%, rgba(255,255,255,0.12) 0 16%, transparent 38%),
+          radial-gradient(circle at 30% 20%, #bca6ff 0%, #8e5bd8 34%, #5e6dff 72%, #475eff 100%);
+        box-shadow:
+          0 18px 32px rgba(77, 124, 255, 0.26),
+          0 10px 22px rgba(142, 91, 216, 0.26),
+          inset 0 2px 4px rgba(255, 255, 255, 0.45),
+          inset 0 -10px 18px rgba(54, 73, 170, 0.28);
+        overflow: hidden;
+        touch-action: none;
+        user-select: none;
+        -webkit-user-select: none;
+        transition:
+          transform 0.2s ease,
+          box-shadow 0.22s ease,
+          filter 0.22s ease;
       }
       #aiFab:active {
-        transform: scale(0.94);
+        transform: scale(0.97);
+      }
+      #aiFab.dragging {
+        transform: scale(1.03);
+        box-shadow:
+          0 24px 42px rgba(77, 124, 255, 0.32),
+          0 14px 30px rgba(142, 91, 216, 0.3),
+          inset 0 2px 4px rgba(255, 255, 255, 0.5),
+          inset 0 -10px 18px rgba(54, 73, 170, 0.3);
+        filter: saturate(1.08);
       }
       #aiFab.on {
-        background: linear-gradient(145deg, #2f3d55, #1f2838);
+        box-shadow:
+          0 22px 42px rgba(77, 124, 255, 0.34),
+          0 14px 32px rgba(142, 91, 216, 0.34),
+          inset 0 2px 4px rgba(255, 255, 255, 0.5),
+          inset 0 -10px 18px rgba(54, 73, 170, 0.32);
+      }
+      #aiFab::before {
+        content: "";
+        position: absolute;
+        inset: 7px 13px 42px 12px;
+        border-radius: 999px;
+        background: linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.04));
+        filter: blur(0.2px);
+        pointer-events: none;
+      }
+      #aiFab::after {
+        content: "";
+        position: absolute;
+        inset: auto 10px 8px 10px;
+        height: 22px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 50% 40%, rgba(255,255,255,0.18), rgba(255,255,255,0));
+        pointer-events: none;
+      }
+      .ai-fab-blob {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(0.4px);
+        opacity: 0.68;
+        background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.48), rgba(255,255,255,0.08) 62%, rgba(255,255,255,0));
+        pointer-events: none;
+        mix-blend-mode: screen;
+      }
+      .ai-fab-blob.b1 {
+        width: 26px;
+        height: 26px;
+        left: 10px;
+        top: 18px;
+        animation: aiBlob1 4.8s ease-in-out infinite;
+      }
+      .ai-fab-blob.b2 {
+        width: 20px;
+        height: 20px;
+        right: 10px;
+        top: 12px;
+        animation: aiBlob2 5.4s ease-in-out infinite;
+      }
+      .ai-fab-core {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        text-shadow: 0 3px 10px rgba(30, 41, 99, 0.22);
+      }
+      .ai-fab-core i {
+        font-style: normal;
+        font-size: 18px;
+        line-height: 1;
+        animation: aiSpark 3.6s ease-in-out infinite;
+      }
+      .ai-fab-core b {
+        font-size: 15px;
+        line-height: 1;
+        letter-spacing: 0.5px;
+      }
+      @keyframes aiBlob1 {
+        0%,100% { transform: translate(0,0) scale(1); }
+        35% { transform: translate(8px,-4px) scale(1.12); }
+        65% { transform: translate(4px,6px) scale(0.92); }
+      }
+      @keyframes aiBlob2 {
+        0%,100% { transform: translate(0,0) scale(1); }
+        30% { transform: translate(-6px,5px) scale(1.08); }
+        70% { transform: translate(-3px,-5px) scale(0.9); }
+      }
+      @keyframes aiSpark {
+        0%,100% { transform: translateY(0) scale(1); opacity: 1; }
+        50% { transform: translateY(-1px) scale(1.08); opacity: 0.95; }
       }
       #aiPanel {
         position: fixed;
@@ -2741,7 +2842,11 @@
       </div>
     </div>
 
-    <button id="aiFab" type="button">✨ AI</button>
+    <button id="aiFab" type="button" aria-label="AI 旅行搭子">
+      <span class="ai-fab-blob b1"></span>
+      <span class="ai-fab-blob b2"></span>
+      <span class="ai-fab-core"><i>✨</i><b>AI</b></span>
+    </button>
     <div id="aiPanel" aria-hidden="true">
       <div class="ai-head">
         <div class="ai-logo">✨</div>
@@ -13580,6 +13685,44 @@
 
         /* ---------- AI 旅行搭子：先做演示 UI，真接 Mimo 时走 PTAI / AI_ENDPOINT ---------- */
         var aiLastRecs = [];
+        var aiFabPos = { x: null, y: null };
+        var aiFabLoop = 0;
+        function aiFabBounds() {
+          var fab = $("aiFab");
+          var w = fab ? fab.offsetWidth || 78 : 78;
+          var h = fab ? fab.offsetHeight || 78 : 78;
+          return {
+            minX: 10,
+            maxX: Math.max(10, vw() - w - 10),
+            minY: topH() + 12,
+            maxY: Math.max(topH() + 12, dTop - h - 12),
+          };
+        }
+        function syncAIFab(forceDefault) {
+          var fab = $("aiFab");
+          if (!fab) return;
+          var bd = aiFabBounds();
+          if (aiFabPos.x == null || aiFabPos.y == null || forceDefault) {
+            aiFabPos.x = bd.maxX;
+            aiFabPos.y = Math.max(
+              bd.minY,
+              Math.min(bd.maxY, dTop - (fab.offsetHeight || 78) - 14),
+            );
+          }
+          aiFabPos.x = Math.max(bd.minX, Math.min(bd.maxX, aiFabPos.x));
+          aiFabPos.y = Math.max(bd.minY, Math.min(bd.maxY, aiFabPos.y));
+          fab.style.left = aiFabPos.x + "px";
+          fab.style.top = aiFabPos.y + "px";
+          fab.style.right = "auto";
+          fab.style.bottom = "auto";
+        }
+        function keepAIFabFloating() {
+          syncAIFab(false);
+          aiFabLoop = requestAnimationFrame(keepAIFabFloating);
+        }
+        function toggleAI() {
+          setAI(!$("aiPanel").classList.contains("on"));
+        }
         function setAI(open) {
           var p = $("aiPanel"),
             f = $("aiFab");
@@ -13587,6 +13730,7 @@
           p.classList.toggle("on", !!open);
           f.classList.toggle("on", !!open);
           p.setAttribute("aria-hidden", open ? "false" : "true");
+          syncAIFab(false);
           if (open) {
             closeSheet();
             dismissBubbles();
@@ -13807,9 +13951,43 @@
           }
         }
         function initAI() {
-          if (!$("aiFab")) return;
-          $("aiFab").addEventListener("click", function () {
-            setAI(!$("aiPanel").classList.contains("on"));
+          var fab = $("aiFab");
+          if (!fab) return;
+          syncAIFab(true);
+          if (!aiFabLoop) keepAIFabFloating();
+          fab.addEventListener("pointerdown", function (e) {
+            e.preventDefault();
+            var sx = e.clientX,
+              sy = e.clientY,
+              x0 = aiFabPos.x,
+              y0 = aiFabPos.y,
+              moved = false;
+            try {
+              fab.setPointerCapture(e.pointerId);
+            } catch (err) {}
+            function mv(ev) {
+              var dx = ev.clientX - sx,
+                dy = ev.clientY - sy;
+              if (!moved && dx * dx + dy * dy > 64) {
+                moved = true;
+                fab.classList.add("dragging");
+              }
+              if (!moved) return;
+              var bd = aiFabBounds();
+              aiFabPos.x = Math.max(bd.minX, Math.min(bd.maxX, x0 + dx));
+              aiFabPos.y = Math.max(bd.minY, Math.min(bd.maxY, y0 + dy));
+              syncAIFab(false);
+            }
+            function up() {
+              fab.removeEventListener("pointermove", mv);
+              fab.removeEventListener("pointerup", up);
+              fab.removeEventListener("pointercancel", up);
+              fab.classList.remove("dragging");
+              if (!moved) toggleAI();
+            }
+            fab.addEventListener("pointermove", mv);
+            fab.addEventListener("pointerup", up);
+            fab.addEventListener("pointercancel", up);
           });
           $("aiClose").addEventListener("click", function () {
             setAI(false);
