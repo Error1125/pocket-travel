@@ -1105,7 +1105,7 @@
         touch-action: none;
         animation:
           bbIn 0.42s cubic-bezier(0.2, 1.5, 0.4, 1) backwards,
-          bbFloat 3.2s ease-in-out 0.5s infinite;
+          bbFloat 4.8s ease-in-out 0.8s infinite;
       }
       .bb-c {
         width: 54px;
@@ -1194,7 +1194,7 @@
           margin-top: 0;
         }
         50% {
-          margin-top: -7px;
+          margin-top: -3px;
         }
       }
 
@@ -2490,131 +2490,168 @@
         opacity: 0.5;
       }
 
-      /* ---------- AI 旅行搭子（v5.2 液态球 + 可拖动） ---------- */
+      /* ---------- AI 旅行搭子（v5.2.1 小号 3D 流体球 + 可拖动） ---------- */
       #aiFab {
         position: fixed;
         left: 0;
         top: 0;
         z-index: 674;
-        width: 78px;
-        height: 78px;
+        width: 62px;
+        height: 62px;
         padding: 0;
         border: 0;
         border-radius: 50%;
         display: block;
         color: #fff;
         background:
-          radial-gradient(circle at 30% 25%, rgba(255,255,255,0.55) 0 10%, transparent 30%),
-          radial-gradient(circle at 68% 70%, rgba(255,255,255,0.12) 0 16%, transparent 38%),
-          radial-gradient(circle at 30% 20%, #bca6ff 0%, #8e5bd8 34%, #5e6dff 72%, #475eff 100%);
+          radial-gradient(circle at 32% 22%, rgba(255,255,255,0.78) 0 6%, rgba(255,255,255,0.28) 13%, transparent 26%),
+          radial-gradient(circle at 70% 76%, rgba(43,65,218,0.46) 0 16%, transparent 42%),
+          radial-gradient(circle at 36% 78%, rgba(175,122,255,0.34) 0 18%, transparent 46%),
+          conic-gradient(from 215deg at 48% 50%, #9f75ff 0deg, #6878ff 92deg, #4d7cff 168deg, #8e5bd8 252deg, #c7a8ff 322deg, #9f75ff 360deg);
         box-shadow:
-          0 18px 32px rgba(77, 124, 255, 0.26),
-          0 10px 22px rgba(142, 91, 216, 0.26),
-          inset 0 2px 4px rgba(255, 255, 255, 0.45),
-          inset 0 -10px 18px rgba(54, 73, 170, 0.28);
+          0 14px 24px rgba(77, 124, 255, 0.22),
+          0 8px 18px rgba(142, 91, 216, 0.22),
+          inset 0 2px 4px rgba(255, 255, 255, 0.52),
+          inset 0 -11px 18px rgba(35, 49, 170, 0.36),
+          inset -8px -10px 18px rgba(60, 71, 210, 0.18);
         overflow: hidden;
         touch-action: none;
         user-select: none;
         -webkit-user-select: none;
+        isolation: isolate;
         transition:
           transform 0.2s ease,
           box-shadow 0.22s ease,
           filter 0.22s ease;
       }
       #aiFab:active {
-        transform: scale(0.97);
+        transform: scale(0.96);
       }
       #aiFab.dragging {
-        transform: scale(1.03);
+        transform: scale(1.025);
         box-shadow:
-          0 24px 42px rgba(77, 124, 255, 0.32),
-          0 14px 30px rgba(142, 91, 216, 0.3),
-          inset 0 2px 4px rgba(255, 255, 255, 0.5),
-          inset 0 -10px 18px rgba(54, 73, 170, 0.3);
-        filter: saturate(1.08);
+          0 20px 34px rgba(77, 124, 255, 0.28),
+          0 12px 24px rgba(142, 91, 216, 0.28),
+          inset 0 2px 4px rgba(255, 255, 255, 0.56),
+          inset 0 -11px 18px rgba(35, 49, 170, 0.38),
+          inset -8px -10px 18px rgba(60, 71, 210, 0.22);
+        filter: saturate(1.1);
       }
       #aiFab.on {
+        filter: saturate(1.12);
         box-shadow:
-          0 22px 42px rgba(77, 124, 255, 0.34),
-          0 14px 32px rgba(142, 91, 216, 0.34),
-          inset 0 2px 4px rgba(255, 255, 255, 0.5),
-          inset 0 -10px 18px rgba(54, 73, 170, 0.32);
+          0 18px 34px rgba(77, 124, 255, 0.3),
+          0 10px 26px rgba(142, 91, 216, 0.3),
+          inset 0 2px 4px rgba(255, 255, 255, 0.56),
+          inset 0 -11px 18px rgba(35, 49, 170, 0.4),
+          inset -8px -10px 18px rgba(60, 71, 210, 0.22);
       }
       #aiFab::before {
         content: "";
         position: absolute;
-        inset: 7px 13px 42px 12px;
-        border-radius: 999px;
-        background: linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.04));
-        filter: blur(0.2px);
+        inset: -24%;
+        z-index: 0;
+        border-radius: 42% 58% 54% 46%;
+        background:
+          radial-gradient(ellipse at 30% 34%, rgba(255,255,255,0.62), rgba(255,255,255,0.1) 24%, transparent 46%),
+          radial-gradient(ellipse at 72% 58%, rgba(210,196,255,0.46), rgba(116,132,255,0.08) 30%, transparent 54%),
+          linear-gradient(135deg, rgba(255,255,255,0.18), rgba(255,255,255,0));
+        filter: blur(1px);
+        opacity: 0.78;
+        mix-blend-mode: screen;
         pointer-events: none;
+        animation: aiLiquidSurface 7.2s ease-in-out infinite;
       }
       #aiFab::after {
         content: "";
         position: absolute;
-        inset: auto 10px 8px 10px;
-        height: 22px;
+        inset: 3px;
+        z-index: 2;
         border-radius: 50%;
-        background: radial-gradient(circle at 50% 40%, rgba(255,255,255,0.18), rgba(255,255,255,0));
+        background:
+          radial-gradient(ellipse at 32% 18%, rgba(255,255,255,0.82) 0 8%, rgba(255,255,255,0.24) 18%, transparent 36%),
+          radial-gradient(ellipse at 72% 86%, rgba(255,255,255,0.14), transparent 38%),
+          linear-gradient(145deg, rgba(255,255,255,0.18), rgba(255,255,255,0.02) 38%, rgba(0,0,0,0.08) 100%);
+        box-shadow:
+          inset 0 1px 2px rgba(255,255,255,0.55),
+          inset 0 -8px 16px rgba(39, 50, 150, 0.24);
         pointer-events: none;
       }
       .ai-fab-blob {
         position: absolute;
-        border-radius: 50%;
-        filter: blur(0.4px);
-        opacity: 0.68;
-        background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.48), rgba(255,255,255,0.08) 62%, rgba(255,255,255,0));
+        z-index: 1;
+        border-radius: 999px;
+        filter: blur(5px);
+        opacity: 0.42;
+        background: radial-gradient(ellipse at 38% 42%, rgba(255,255,255,0.72), rgba(188,166,255,0.28) 42%, rgba(255,255,255,0));
         pointer-events: none;
         mix-blend-mode: screen;
       }
       .ai-fab-blob.b1 {
-        width: 26px;
-        height: 26px;
-        left: 10px;
-        top: 18px;
-        animation: aiBlob1 4.8s ease-in-out infinite;
+        width: 44px;
+        height: 24px;
+        left: -5px;
+        top: 22px;
+        animation: aiBlob1 6.6s ease-in-out infinite;
       }
       .ai-fab-blob.b2 {
-        width: 20px;
-        height: 20px;
-        right: 10px;
-        top: 12px;
-        animation: aiBlob2 5.4s ease-in-out infinite;
+        width: 38px;
+        height: 22px;
+        right: -7px;
+        top: 13px;
+        animation: aiBlob2 7.4s ease-in-out infinite;
       }
       .ai-fab-core {
         position: absolute;
         inset: 0;
+        z-index: 3;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 2px;
-        text-shadow: 0 3px 10px rgba(30, 41, 99, 0.22);
+        gap: 1px;
+        text-shadow:
+          0 2px 8px rgba(30, 41, 99, 0.28),
+          0 1px 1px rgba(255,255,255,0.2);
       }
       .ai-fab-core i {
         font-style: normal;
-        font-size: 18px;
+        font-size: 14px;
         line-height: 1;
-        animation: aiSpark 3.6s ease-in-out infinite;
+        animation: aiSpark 4.2s ease-in-out infinite;
       }
       .ai-fab-core b {
-        font-size: 15px;
+        font-size: 13px;
         line-height: 1;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.4px;
+      }
+      @keyframes aiLiquidSurface {
+        0%,100% {
+          transform: rotate(0deg) scale(1);
+          border-radius: 42% 58% 54% 46%;
+        }
+        33% {
+          transform: rotate(28deg) scale(1.06);
+          border-radius: 56% 44% 46% 54%;
+        }
+        66% {
+          transform: rotate(-18deg) scale(0.98);
+          border-radius: 48% 52% 60% 40%;
+        }
       }
       @keyframes aiBlob1 {
-        0%,100% { transform: translate(0,0) scale(1); }
-        35% { transform: translate(8px,-4px) scale(1.12); }
-        65% { transform: translate(4px,6px) scale(0.92); }
+        0%,100% { transform: translate(0,0) rotate(0deg) scale(1); }
+        40% { transform: translate(13px,-3px) rotate(18deg) scale(1.12); }
+        72% { transform: translate(5px,7px) rotate(-12deg) scale(0.94); }
       }
       @keyframes aiBlob2 {
-        0%,100% { transform: translate(0,0) scale(1); }
-        30% { transform: translate(-6px,5px) scale(1.08); }
-        70% { transform: translate(-3px,-5px) scale(0.9); }
+        0%,100% { transform: translate(0,0) rotate(0deg) scale(1); }
+        34% { transform: translate(-11px,7px) rotate(-20deg) scale(1.1); }
+        76% { transform: translate(-4px,-6px) rotate(14deg) scale(0.92); }
       }
       @keyframes aiSpark {
-        0%,100% { transform: translateY(0) scale(1); opacity: 1; }
-        50% { transform: translateY(-1px) scale(1.08); opacity: 0.95; }
+        0%,100% { transform: translateY(0) scale(1); opacity: 0.96; }
+        50% { transform: translateY(-1px) scale(1.05); opacity: 1; }
       }
       #aiPanel {
         position: fixed;
@@ -12107,7 +12144,7 @@
           return id;
         }
 
-        /* --- 泡泡统一排版：普通随缘 + 系统推荐一起占位，避免互相压字 --- */
+        /* --- 泡泡统一排版：真实地图位置优先，再做轻避让 --- */
         function loadSystemBubbleRecs(originId) {
           if (!SYSP || !SYSP.enabled()) return Promise.resolve([]);
           return recsFor(originId).then(function (raw) {
@@ -12118,60 +12155,115 @@
               .slice(0, 3);
           });
         }
-        function bubbleSlots(originId, n) {
+        function bubbleOriginPoint(originId) {
           var p = P[originId],
             sp;
-          if (!p) return [];
+          if (!p) return null;
           try {
             sp = map.latLngToContainerPoint([p.la, p.ln]);
           } catch (e) {
-            return [];
+            return null;
           }
-          var slots = [],
-            rings = [112, 166, 218],
-            angles = [-166, -136, -106, -76, -46, -16],
-            i,
-            r,
-            ang,
-            x,
-            y;
-          for (i = 0; i < n; i++) {
-            r = rings[Math.floor(i / angles.length)] || rings[rings.length - 1];
-            ang = (angles[i % angles.length] * Math.PI) / 180;
-            x = sp.x + Math.cos(ang) * r;
-            y = sp.y + Math.sin(ang) * r - 8;
-            x = Math.max(46, Math.min(vw() - 46, x));
-            y = Math.max(topH() + 54, Math.min(dTop - 52, y));
-            slots.push({ x: x, y: y });
+          return sp;
+        }
+        function clampBubblePoint(pt) {
+          pt.x = Math.max(46, Math.min(vw() - 46, pt.x));
+          pt.y = Math.max(topH() + 54, Math.min(dTop - 52, pt.y));
+          return pt;
+        }
+        function bubblePointForItem(item, sp, i) {
+          var tp = null,
+            src = item.kind === "sys" ? item.rec : P[item.id];
+          if (!src) return clampBubblePoint({ x: sp.x, y: sp.y - 92 });
+          try {
+            tp = map.latLngToContainerPoint([src.la, src.ln]);
+          } catch (e) {
+            tp = null;
           }
-          /* clamp 到边缘后可能挤在一起，再做一轮轻量避让 */
-          for (i = 0; i < slots.length; i++) {
-            for (var guard = 0; guard < 8; guard++) {
-              var hit = false;
-              for (var j = 0; j < i; j++) {
-                if (
-                  Math.abs(slots[i].x - slots[j].x) < 82 &&
-                  Math.abs(slots[i].y - slots[j].y) < 72
-                ) {
-                  hit = true;
-                  slots[i].y += i % 2 ? 30 : -30;
-                  slots[i].x += i % 2 ? 18 : -18;
-                  slots[i].x = Math.max(46, Math.min(vw() - 46, slots[i].x));
-                  slots[i].y = Math.max(topH() + 54, Math.min(dTop - 52, slots[i].y));
-                  break;
+          if (!tp) {
+            var ang = ((-150 + i * 36) * Math.PI) / 180,
+              rr = 120 + (i % 3) * 24;
+            return clampBubblePoint({
+              x: sp.x + Math.cos(ang) * rr,
+              y: sp.y + Math.sin(ang) * rr - 8,
+            });
+          }
+          var dx = tp.x - sp.x,
+            dy = tp.y - sp.y,
+            ds = Math.sqrt(dx * dx + dy * dy) || 1,
+            minDist = 88,
+            maxDist = 228;
+          if (ds < minDist) {
+            dx = (dx / ds) * minDist;
+            dy = (dy / ds) * minDist;
+          }
+          if (ds > maxDist) {
+            dx = (dx / ds) * maxDist;
+            dy = (dy / ds) * maxDist;
+          }
+          return clampBubblePoint({ x: sp.x + dx, y: sp.y + dy - 8 });
+        }
+        function relaxBubbleTargets(sp, items, slots) {
+          if (!slots.length) return slots;
+          var raws = slots.map(function (s) {
+            return { x: s.x, y: s.y };
+          });
+          for (var iter = 0; iter < 18; iter++) {
+            for (var i = 0; i < slots.length; i++) {
+              for (var j = i + 1; j < slots.length; j++) {
+                var dx = slots[j].x - slots[i].x,
+                  dy = slots[j].y - slots[i].y,
+                  ds = Math.sqrt(dx * dx + dy * dy) || 0.1,
+                  minGap =
+                    items[i].kind === "sys" || items[j].kind === "sys"
+                      ? 88
+                      : 80;
+                if (ds < minGap) {
+                  var push = (minGap - ds) / 2,
+                    ux = dx / ds,
+                    uy = dy / ds;
+                  slots[i].x -= ux * push;
+                  slots[i].y -= uy * push;
+                  slots[j].x += ux * push;
+                  slots[j].y += uy * push;
                 }
               }
-              if (!hit) break;
+            }
+            for (i = 0; i < slots.length; i++) {
+              slots[i].x += (raws[i].x - slots[i].x) * 0.18;
+              slots[i].y += (raws[i].y - slots[i].y) * 0.18;
+              var ox = slots[i].x - sp.x,
+                oy = slots[i].y - sp.y,
+                od = Math.sqrt(ox * ox + oy * oy) || 1,
+                maxR = 238,
+                minR = 84;
+              if (od > maxR) {
+                slots[i].x = sp.x + (ox / od) * maxR;
+                slots[i].y = sp.y + (oy / od) * maxR;
+              }
+              if (od < minR) {
+                slots[i].x = sp.x + (ox / od) * minR;
+                slots[i].y = sp.y + (oy / od) * minR;
+              }
+              clampBubblePoint(slots[i]);
             }
           }
           return slots;
         }
-        function renderBubbleItem(item, pos, i) {
+        function bubbleLayout(originId, items) {
+          var sp = bubbleOriginPoint(originId);
+          if (!sp) return { origin: null, slots: [] };
+          var slots = items.map(function (item, i) {
+            return bubblePointForItem(item, sp, i);
+          });
+          return { origin: sp, slots: relaxBubbleTargets(sp, items, slots) };
+        }
+        function renderBubbleItem(item, pos, i, origin) {
           var el = document.createElement("div"),
             c;
-          el.style.left = pos.x + "px";
-          el.style.top = pos.y + "px";
-          el.style.animationDelay = i * 45 + "ms," + (500 + i * 45) + "ms";
+          el.style.left = origin.x + "px";
+          el.style.top = origin.y + "px";
+          el.style.animationDelay = i * 40 + "ms," + (760 + i * 40) + "ms";
           if (item.kind === "sys") {
             c = CAT[item.rec.c] || CAT.spot;
             el.className = "bb sys";
@@ -12197,6 +12289,17 @@
           }
           bubHost.appendChild(el);
           bubbles.push(el);
+          requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+              el.style.transition =
+                "left .42s cubic-bezier(.18,.9,.24,1), top .42s cubic-bezier(.18,.9,.24,1)";
+              el.style.left = pos.x + "px";
+              el.style.top = pos.y + "px";
+              setTimeout(function () {
+                if (el) el.style.transition = "";
+              }, 460);
+            });
+          });
         }
         function drawBubblesUnified(originId, ownIds, sysRecs, seq) {
           if (seq && seq !== bubSeq) return;
@@ -12209,9 +12312,11 @@
             items.push({ kind: "sys", rec: rec });
           });
           if (!items.length) return;
-          var slots = bubbleSlots(originId, items.length);
+          var layout = bubbleLayout(originId, items);
+          if (!layout.origin) return;
+          var slots = layout.slots;
           items.forEach(function (item, i) {
-            if (slots[i]) renderBubbleItem(item, slots[i], i);
+            if (slots[i]) renderBubbleItem(item, slots[i], i, layout.origin);
           });
         }
         function attachSysBubble(el, rec, x0, y0) {
