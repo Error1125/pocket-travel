@@ -1128,10 +1128,15 @@
           inset 0 1px 0 rgba(255, 255, 255, 0.9);
       }
       .bb-n {
-        max-width: 88px;
+        max-width: 104px;
         overflow: hidden;
         text-overflow: ellipsis;
-        white-space: nowrap;
+        white-space: normal;
+        text-align: center;
+        line-height: 1.15;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
         font-size: 10.5px;
         font-weight: 800;
         padding: 2.5px 7px;
@@ -1141,6 +1146,19 @@
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
         box-shadow: 0 2px 8px rgba(23, 34, 51, 0.16);
+      }
+      .bb.front {
+        z-index: 650;
+      }
+      .bb.front .bb-c {
+        transform: scale(1.08);
+        box-shadow:
+          0 14px 30px rgba(23, 34, 51, 0.3),
+          inset 0 1px 0 rgba(255, 255, 255, 0.94);
+      }
+      .bb.front .bb-n {
+        max-width: 148px;
+        -webkit-line-clamp: 2;
       }
       .bb.drag {
         animation: none;
@@ -2471,6 +2489,222 @@
         top: 2px;
         opacity: 0.5;
       }
+
+      /* ---------- AI 旅行搭子（v5.1 演示 UI） ---------- */
+      #aiFab {
+        position: fixed;
+        right: 15px;
+        bottom: calc(var(--sa-b) + 152px);
+        z-index: 674;
+        height: 42px;
+        padding: 0 14px;
+        border: 0;
+        border-radius: 999px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13.5px;
+        font-weight: 900;
+        color: #fff;
+        background: linear-gradient(145deg, #8e5bd8, #4d7cff);
+        box-shadow: 0 12px 26px rgba(77, 124, 255, 0.33);
+      }
+      #aiFab:active {
+        transform: scale(0.94);
+      }
+      #aiFab.on {
+        background: linear-gradient(145deg, #2f3d55, #1f2838);
+      }
+      #aiPanel {
+        position: fixed;
+        left: 10px;
+        right: 10px;
+        bottom: calc(var(--sa-b) + 10px);
+        z-index: 782;
+        max-height: min(76vh, 650px);
+        overflow: hidden;
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(28px) saturate(1.7);
+        -webkit-backdrop-filter: blur(28px) saturate(1.7);
+        box-shadow: 0 22px 60px rgba(23, 34, 51, 0.27);
+        border: 1px solid rgba(255, 255, 255, 0.72);
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(calc(100% + 28px));
+        transition:
+          transform 0.28s cubic-bezier(0.2, 0.9, 0.25, 1),
+          opacity 0.18s ease;
+      }
+      #aiPanel.on {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0);
+      }
+      .ai-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 15px 10px;
+      }
+      .ai-logo {
+        flex: none;
+        width: 36px;
+        height: 36px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        background: linear-gradient(145deg, #8e5bd8, #4d7cff);
+        box-shadow: 0 8px 18px rgba(142, 91, 216, 0.28);
+      }
+      .ai-title {
+        flex: 1;
+        min-width: 0;
+      }
+      .ai-title b {
+        display: block;
+        font-size: 16px;
+        color: var(--ink);
+      }
+      .ai-title small {
+        display: block;
+        margin-top: 2px;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--ink3);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      #aiClose {
+        flex: none;
+        width: 32px;
+        height: 32px;
+        border: 0;
+        border-radius: 12px;
+        background: rgba(23, 34, 51, 0.07);
+        color: var(--ink2);
+        font-weight: 900;
+      }
+      .ai-body {
+        max-height: calc(min(76vh, 650px) - 60px);
+        overflow-y: auto;
+        padding: 0 14px 14px;
+      }
+      .ai-lb {
+        margin: 10px 1px 6px;
+        font-size: 12px;
+        font-weight: 900;
+        color: var(--ink2);
+      }
+      .ai-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+      }
+      .ai-chips button {
+        border: 1px solid rgba(142, 91, 216, 0.24);
+        border-radius: 999px;
+        padding: 7px 10px;
+        background: rgba(142, 91, 216, 0.08);
+        color: #6547a3;
+        font-size: 12px;
+        font-weight: 800;
+      }
+      .ai-chips button.on {
+        color: #fff;
+        background: linear-gradient(145deg, #8e5bd8, #4d7cff);
+        box-shadow: 0 6px 14px rgba(142, 91, 216, 0.22);
+      }
+      .ai-inputs {
+        display: grid;
+        gap: 8px;
+        margin-top: 10px;
+      }
+      .ai-inputs input,
+      .ai-inputs textarea {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid rgba(23, 34, 51, 0.1);
+        border-radius: 15px;
+        padding: 11px 12px;
+        background: rgba(255, 255, 255, 0.78);
+        color: var(--ink);
+        font-size: 13px;
+        font-weight: 700;
+        outline: none;
+      }
+      .ai-inputs textarea {
+        min-height: 78px;
+        resize: vertical;
+        line-height: 1.5;
+      }
+      .ai-run {
+        width: 100%;
+        margin-top: 10px;
+        border: 0;
+        border-radius: 16px;
+        padding: 12px 14px;
+        background: linear-gradient(145deg, #2f3d55, #1f2838);
+        color: #fff;
+        font-size: 14px;
+        font-weight: 900;
+      }
+      .ai-run[disabled] {
+        opacity: 0.55;
+      }
+      .ai-res {
+        margin-top: 12px;
+        display: grid;
+        gap: 9px;
+      }
+      .ai-note {
+        padding: 10px 11px;
+        border-radius: 15px;
+        background: rgba(77, 124, 255, 0.09);
+        color: #30456f;
+        font-size: 12px;
+        font-weight: 800;
+        line-height: 1.45;
+      }
+      .ai-card {
+        padding: 11px;
+        border-radius: 17px;
+        background: rgba(255, 255, 255, 0.76);
+        border: 1px solid rgba(23, 34, 51, 0.08);
+        box-shadow: 0 6px 18px rgba(23, 34, 51, 0.08);
+      }
+      .ai-card h4 {
+        margin: 0 0 5px;
+        font-size: 14px;
+        color: var(--ink);
+      }
+      .ai-card p {
+        margin: 0 0 8px;
+        color: var(--ink2);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+      .ai-actions {
+        display: flex;
+        gap: 7px;
+      }
+      .ai-actions button {
+        flex: 1;
+        border: 0;
+        border-radius: 13px;
+        padding: 8px;
+        background: rgba(142, 91, 216, 0.12);
+        color: #6547a3;
+        font-size: 12px;
+        font-weight: 900;
+      }
+      .ai-actions button[data-ai-act="plan"] {
+        background: rgba(224, 73, 46, 0.12);
+        color: var(--verm);
+      }
     </style>
   </head>
   <body>
@@ -2504,6 +2738,45 @@
         <div class="view" id="v-pool"></div>
         <div class="view" id="v-say"></div>
         <div class="view" id="v-info"></div>
+      </div>
+    </div>
+
+    <button id="aiFab" type="button">✨ AI</button>
+    <div id="aiPanel" aria-hidden="true">
+      <div class="ai-head">
+        <div class="ai-logo">✨</div>
+        <div class="ai-title">
+          <b>AI 旅行搭子</b>
+          <small>先做演示：看位置和交互，接 Mimo 走服务端转发</small>
+        </div>
+        <button id="aiClose" type="button">✕</button>
+      </div>
+      <div class="ai-body">
+        <div class="ai-lb">今天想怎么逛？</div>
+        <div class="ai-chips" id="aiPrefs">
+          <button type="button" data-pref="少打卡">少打卡</button>
+          <button type="button" data-pref="随意逛">随意逛</button>
+          <button type="button" data-pref="动漫">动漫</button>
+          <button type="button" data-pref="二次元">二次元</button>
+          <button type="button" data-pref="度假">度假</button>
+          <button type="button" data-pref="购物">购物</button>
+          <button type="button" data-pref="雨天备用">雨天备用</button>
+          <button type="button" data-pref="MBTI友好">MBTI友好</button>
+        </div>
+        <div class="ai-inputs">
+          <input
+            id="aiPlace"
+            placeholder="想去的地点：银座 / 秋叶原 / 没想好也行"
+          />
+          <textarea
+            id="aiWish"
+            placeholder="比如：7.17 银座别太累，想吃饭、买谷子、顺便拍照。也可以直接空着，让它按当前行程给随缘建议。"
+          ></textarea>
+        </div>
+        <button class="ai-run" id="aiRun" type="button">生成建议</button>
+        <div class="ai-res" id="aiRes">
+          <div class="ai-note">会先给你卡片预览，不会自动改行程。点「收进随缘池」或「加入今日」才落库。</div>
+        </div>
       </div>
     </div>
 
@@ -11326,6 +11599,7 @@
           }
           dismissBubbles();
           closeSheet();
+          closeAI(false);
           clearTmp();
         });
         $("pickCancel").addEventListener("click", function () {
@@ -11627,8 +11901,9 @@
         }
 
         /* --- 推荐详情：复用底部卡片外壳，给两个去向按钮 --- */
-        function openRecSheet(rec, base) {
-          dismissBubbles();
+        function openRecSheet(rec, base, opt) {
+          opt = opt || {};
+          if (!opt.keepBubbles) dismissBubbles();
           sheetId = null;
           sheetOrigin = base || null;
           var c = CAT[rec.c] || CAT.spot;
@@ -11727,64 +12002,118 @@
           return id;
         }
 
-        /* --- 系统泡泡：晚半拍浮出，虚线紫圈 + ✨ 角标，拖法与普通泡泡相同 --- */
-        function queueSysBubbles(originId) {
-          if (!SYSP || !SYSP.enabled()) return;
-          recsFor(originId).then(function (raw) {
-            if (bubOrigin !== originId) return; /* 泡泡已换主/已收起 */
-            var recs = raw
+        /* --- 泡泡统一排版：普通随缘 + 系统推荐一起占位，避免互相压字 --- */
+        function loadSystemBubbleRecs(originId) {
+          if (!SYSP || !SYSP.enabled()) return Promise.resolve([]);
+          return recsFor(originId).then(function (raw) {
+            return raw
               .filter(function (r) {
                 return !isDupRec(r);
               })
               .slice(0, 3);
-            spawnSysBubbles(originId, recs);
           });
         }
-        function spawnSysBubbles(originId, recs) {
-          if (!recs.length) return;
+        function bubbleSlots(originId, n) {
           var p = P[originId],
             sp;
-          if (!p) return;
+          if (!p) return [];
           try {
             sp = map.latLngToContainerPoint([p.la, p.ln]);
           } catch (e) {
-            return;
+            return [];
           }
-          var angs =
-            recs.length === 1
-              ? [-90]
-              : recs.length === 2
-                ? [-138, -42]
-                : [-160, -90, -20];
-          recs.forEach(function (rec, i) {
-            var ang = (angs[i] * Math.PI) / 180,
-              r = 182;
-            var x = sp.x + Math.cos(ang) * r,
-              y = sp.y + Math.sin(ang) * r - 8;
-            x = Math.max(42, Math.min(vw() - 42, x));
-            y = Math.max(topH() + 52, Math.min(dTop - 46, y));
-            var c = CAT[rec.c] || CAT.spot;
-            var el = document.createElement("div");
+          var slots = [],
+            rings = [112, 166, 218],
+            angles = [-166, -136, -106, -76, -46, -16],
+            i,
+            r,
+            ang,
+            x,
+            y;
+          for (i = 0; i < n; i++) {
+            r = rings[Math.floor(i / angles.length)] || rings[rings.length - 1];
+            ang = (angles[i % angles.length] * Math.PI) / 180;
+            x = sp.x + Math.cos(ang) * r;
+            y = sp.y + Math.sin(ang) * r - 8;
+            x = Math.max(46, Math.min(vw() - 46, x));
+            y = Math.max(topH() + 54, Math.min(dTop - 52, y));
+            slots.push({ x: x, y: y });
+          }
+          /* clamp 到边缘后可能挤在一起，再做一轮轻量避让 */
+          for (i = 0; i < slots.length; i++) {
+            for (var guard = 0; guard < 8; guard++) {
+              var hit = false;
+              for (var j = 0; j < i; j++) {
+                if (
+                  Math.abs(slots[i].x - slots[j].x) < 82 &&
+                  Math.abs(slots[i].y - slots[j].y) < 72
+                ) {
+                  hit = true;
+                  slots[i].y += i % 2 ? 30 : -30;
+                  slots[i].x += i % 2 ? 18 : -18;
+                  slots[i].x = Math.max(46, Math.min(vw() - 46, slots[i].x));
+                  slots[i].y = Math.max(topH() + 54, Math.min(dTop - 52, slots[i].y));
+                  break;
+                }
+              }
+              if (!hit) break;
+            }
+          }
+          return slots;
+        }
+        function renderBubbleItem(item, pos, i) {
+          var el = document.createElement("div"),
+            c;
+          el.style.left = pos.x + "px";
+          el.style.top = pos.y + "px";
+          el.style.animationDelay = i * 45 + "ms," + (500 + i * 45) + "ms";
+          if (item.kind === "sys") {
+            c = CAT[item.rec.c] || CAT.spot;
             el.className = "bb sys";
-            el.style.left = x + "px";
-            el.style.top = y + "px";
-            el.style.animationDelay =
-              240 + i * 60 + "ms," + (740 + i * 60) + "ms";
             el.innerHTML =
               '<div class="bb-c" style="--cc:#8E5BD8"><span>' +
               c.em +
               '</span><i class="bsp">✨</i></div><div class="bb-n">' +
-              esc(rec.n) +
+              esc(item.rec.n) +
               "</div>";
-            attachSysBubble(el, rec, x, y);
-            bubHost.appendChild(el);
-            bubbles.push(el);
+            attachSysBubble(el, item.rec, pos.x, pos.y);
+          } else {
+            c = CAT[P[item.id].c] || CAT.spot;
+            el.className = "bb";
+            el.innerHTML =
+              '<div class="bb-c" style="--cc:' +
+              c.col +
+              '"><span>' +
+              c.em +
+              '</span></div><div class="bb-n">' +
+              esc(P[item.id].n) +
+              "</div>";
+            attachBubble(el, item.id, pos.x, pos.y);
+          }
+          bubHost.appendChild(el);
+          bubbles.push(el);
+        }
+        function drawBubblesUnified(originId, ownIds, sysRecs, seq) {
+          if (seq && seq !== bubSeq) return;
+          bubHost.innerHTML = "";
+          bubbles = [];
+          var items = ownIds.map(function (id) {
+            return { kind: "pool", id: id };
+          });
+          sysRecs.forEach(function (rec) {
+            items.push({ kind: "sys", rec: rec });
+          });
+          if (!items.length) return;
+          var slots = bubbleSlots(originId, items.length);
+          items.forEach(function (item, i) {
+            if (slots[i]) renderBubbleItem(item, slots[i], i);
           });
         }
         function attachSysBubble(el, rec, x0, y0) {
           el.addEventListener("pointerdown", function (e) {
             e.preventDefault();
             e.stopPropagation();
+            bringBubbleToFront(el);
             try {
               el.setPointerCapture(e.pointerId);
             } catch (err) {}
@@ -11840,7 +12169,7 @@
                     $("sheet").classList.add("on");
                 }
               } else if (Date.now() - t0 < 600) {
-                openRecSheet(rec, bubOrigin);
+                openRecSheet(rec, bubOrigin, { keepBubbles: true });
               }
             }
             el.addEventListener("pointermove", mv);
@@ -11854,7 +12183,8 @@
         bubHost.id = "bub";
         document.body.appendChild(bubHost);
         var bubbles = [],
-          bubOrigin = null;
+          bubOrigin = null,
+          bubSeq = 0;
         function candidates(id, dayId) {
           var day = dget(dayId || cur),
             plan = S.plans[day.id];
@@ -11888,53 +12218,20 @@
         function spawnBubbles(id) {
           dismissBubbles();
           var ids = candidates(id);
-          if (!ids.length) {
-            /* 自己的池子附近没货 → 正好让系统推荐顶上 */
-            bubOrigin = id;
-            queueSysBubbles(id);
-            return;
-          }
           bubOrigin = id;
-          var p = P[id],
-            sp;
-          try {
-            sp = map.latLngToContainerPoint([p.la, p.ln]);
-          } catch (e) {
-            return;
-          }
-          var N = ids.length,
-            a0 = -168,
-            a1 = -12;
-          ids.forEach(function (bid, i) {
-            var ang =
-              ((N === 1 ? -90 : a0 + ((a1 - a0) * i) / (N - 1)) * Math.PI) /
-              180;
-            var r = N > 5 ? (i % 2 ? 150 : 100) : 116;
-            var x = sp.x + Math.cos(ang) * r,
-              y = sp.y + Math.sin(ang) * r - 8;
-            x = Math.max(42, Math.min(vw() - 42, x));
-            y = Math.max(topH() + 52, Math.min(dTop - 46, y));
-            var c = CAT[P[bid].c];
-            var el = document.createElement("div");
-            el.className = "bb";
-            el.style.left = x + "px";
-            el.style.top = y + "px";
-            el.style.animationDelay = i * 45 + "ms," + (500 + i * 45) + "ms";
-            el.innerHTML =
-              '<div class="bb-c" style="--cc:' +
-              c.col +
-              '"><span>' +
-              c.em +
-              '</span></div><div class="bb-n">' +
-              esc(P[bid].n) +
-              "</div>";
-            attachBubble(el, bid, x, y);
-            bubHost.appendChild(el);
-            bubbles.push(el);
+          var seq = ++bubSeq,
+            fallbackTimer = null;
+          fallbackTimer = setTimeout(function () {
+            drawBubblesUnified(id, ids, [], seq);
+          }, 260);
+          loadSystemBubbleRecs(id).then(function (sysRecs) {
+            if (seq !== bubSeq || bubOrigin !== id) return;
+            clearTimeout(fallbackTimer);
+            drawBubblesUnified(id, ids, sysRecs, seq);
           });
-          queueSysBubbles(id);
         }
         function dismissBubbles() {
+          bubSeq++;
           if (bubbles.length) {
             bubbles.forEach(function (el) {
               el.classList.add("out");
@@ -11946,6 +12243,12 @@
           }
           hideDrop();
           bubOrigin = null;
+        }
+        function bringBubbleToFront(el) {
+          bubbles.forEach(function (b) {
+            b.classList.remove("front");
+          });
+          el.classList.add("front");
         }
         function dropZoneY() {
           return vh() - (106 + safeB());
@@ -11973,6 +12276,7 @@
           el.addEventListener("pointerdown", function (e) {
             e.preventDefault();
             e.stopPropagation();
+            bringBubbleToFront(el);
             try {
               el.setPointerCapture(e.pointerId);
             } catch (err) {}
@@ -13273,6 +13577,256 @@
             }
           });
         }
+
+        /* ---------- AI 旅行搭子：先做演示 UI，真接 Mimo 时走 PTAI / AI_ENDPOINT ---------- */
+        var aiLastRecs = [];
+        function setAI(open) {
+          var p = $("aiPanel"),
+            f = $("aiFab");
+          if (!p || !f) return;
+          p.classList.toggle("on", !!open);
+          f.classList.toggle("on", !!open);
+          p.setAttribute("aria-hidden", open ? "false" : "true");
+          if (open) {
+            closeSheet();
+            dismissBubbles();
+            snapTo(snapPeek);
+          }
+        }
+        function closeAI(force) {
+          var p = $("aiPanel");
+          if (p && (force || p.classList.contains("on"))) setAI(false);
+        }
+        function aiPrefs() {
+          var arr = [];
+          Array.prototype.forEach.call(
+            $("aiPrefs").querySelectorAll("button.on"),
+            function (b) {
+              arr.push(b.getAttribute("data-pref"));
+            },
+          );
+          return arr;
+        }
+        function aiBasePlace() {
+          var plan = (S.plans && S.plans[cur]) || [];
+          if (focusId && P[focusId]) return P[focusId];
+          if (plan.length && P[plan[0]]) return P[plan[0]];
+          var center = map.getCenter();
+          return {
+            n: dget(cur).title || "今天",
+            c: "spot",
+            la: center.lat,
+            ln: center.lng,
+            ar: dget(cur).date || "当前地图",
+            d: "AI 建议基准点",
+          };
+        }
+        function aiDemoTemplates(prefs) {
+          var has2d = prefs.indexOf("动漫") >= 0 || prefs.indexOf("二次元") >= 0;
+          var hasShop = prefs.indexOf("购物") >= 0;
+          var hasSlow = prefs.indexOf("少打卡") >= 0 || prefs.indexOf("随意逛") >= 0;
+          var hasRain = prefs.indexOf("雨天备用") >= 0;
+          if (has2d)
+            return [
+              ["shop", "中古谷子小店", "适合顺路淘一点老番周边，不把它当硬任务。"],
+              ["fun", "街机游戏房", "逛累了进去投几个硬币，二次元浓度补一下。"],
+              ["photo", "动画感街角机位", "不用排队，走到附近顺手拍两张就撤。"],
+            ];
+          if (hasShop)
+            return [
+              ["shop", "纸品杂货店", "手账、明信片、小礼物都能顺手解决。"],
+              ["sweet", "商场里侧甜品铺", "室内路线友好，适合当中场回血点。"],
+              ["spot", "屋顶小展望位", "购物中间上去透气，不会太费脚。"],
+            ];
+          if (hasRain)
+            return [
+              ["sweet", "雨天咖啡避难所", "靠近主路线，雨大时可以直接切进去。"],
+              ["spot", "室内小展馆", "不用暴走，适合临时替换户外点。"],
+              ["shop", "地下街顺路店", "从车站动线过去比较稳。"],
+            ];
+          if (hasSlow)
+            return [
+              ["sweet", "慢悠悠咖啡站", "给脚和脑子都留一点空白。"],
+              ["photo", "安静街口", "路过就拍，不专门绕路。"],
+              ["eat", "轻量晚餐候补", "不想排队时的保险选项。"],
+            ];
+          return [
+            ["eat", "顺路小食堂", "离当前路线近，适合当不确定时的备选。"],
+            ["sweet", "回血甜品点", "逛到一半可以坐一下。"],
+            ["photo", "附近拍照点", "不用打卡焦虑，看到有感觉再去。"],
+          ];
+        }
+        function aiDemoRecs(wish, place, prefs) {
+          var base = aiBasePlace();
+          var tpls = aiDemoTemplates(prefs);
+          return tpls.map(function (t, i) {
+            var dx = (i - 1) * 0.0012;
+            var dy = (i % 2 ? 1 : -1) * 0.001;
+            return {
+              ref: "ai-demo:" + Date.now() + ":" + i,
+              n: (place ? place + " · " : "") + t[1],
+              c: t[0],
+              la: base.la + dy,
+              ln: base.ln + dx,
+              ar: place || base.ar || "AI 演示",
+              d: t[2] + (wish ? "\n\n你的需求：「" + wish + "」" : ""),
+              p: "AI 草稿",
+              ai: 1,
+            };
+          });
+        }
+        function aiRecsFromResponse(j) {
+          var arr = [];
+          if (!j || !j.P) return arr;
+          for (var id in j.P) {
+            var p = j.P[id];
+            if (!p || !p.n || !isFinite(p.la) || !isFinite(p.ln)) continue;
+            arr.push({
+              ref: p.ref || "ai:" + id,
+              n: p.n,
+              c: CAT[p.c] ? p.c : "spot",
+              la: p.la,
+              ln: p.ln,
+              ar: p.ar || "AI 建议",
+              d: p.d || "",
+              p: p.p || "AI 建议",
+              t: p.t,
+              ai: 1,
+            });
+          }
+          return arr.slice(0, 6);
+        }
+        function renderAIResult(recs, note) {
+          aiLastRecs = recs || [];
+          var h = "";
+          if (note) h += '<div class="ai-note">' + esc(note) + "</div>";
+          if (!aiLastRecs.length) {
+            h += '<div class="ai-note">暂时没有拿到可落地的地点卡片。你可以多写一点地点或偏好再试。</div>';
+            $("aiRes").innerHTML = h;
+            return;
+          }
+          aiLastRecs.forEach(function (r, i) {
+            var c = CAT[r.c] || CAT.spot;
+            h +=
+              '<div class="ai-card"><h4>' +
+              c.em +
+              " " +
+              esc(r.n) +
+              "</h4><p>" +
+              esc(r.d || r.ar || "") +
+              '</p><div class="ai-actions">' +
+              '<button type="button" data-ai-act="pool" data-ai-idx="' +
+              i +
+              '">🎐 收进随缘池</button>' +
+              '<button type="button" data-ai-act="plan" data-ai-idx="' +
+              i +
+              '">✚ 加入今日</button>' +
+              "</div></div>";
+          });
+          $("aiRes").innerHTML = h;
+        }
+        function adoptAIRec(rec) {
+          for (var ex in P) {
+            if (rec.ref && P[ex] && P[ex].ref === rec.ref) return ex;
+          }
+          var id =
+            "ai" +
+            Date.now().toString(36) +
+            Math.floor(Math.random() * 36).toString(36);
+          var np = {
+            n: rec.n,
+            c: CAT[rec.c] ? rec.c : "spot",
+            la: rec.la,
+            ln: rec.ln,
+            ar: rec.ar || "AI 建议",
+            d: rec.d || "",
+            p: rec.p || "AI 建议",
+            ref: rec.ref,
+            ai: 1,
+          };
+          if (rec.t) np.t = rec.t;
+          P[id] = np;
+          return id;
+        }
+        function aiAdd(idx, mode) {
+          var rec = aiLastRecs[idx];
+          if (!rec) return;
+          var id = adoptAIRec(rec);
+          var day = dget(cur);
+          if (mode === "plan") {
+            addToPlan(id, null, day.id);
+            openSheet(id, { keep: true });
+            return;
+          }
+          if (day.pool.indexOf(id) < 0 && S.plans[day.id].indexOf(id) < 0)
+            day.pool.push(id);
+          save();
+          renderAll();
+          if (tab === "pool") renderPool();
+          toast("🎐 已收进随缘池 · " + esc(rec.n));
+        }
+        function runAI() {
+          var btn = $("aiRun"),
+            place = $("aiPlace").value.trim(),
+            wish = $("aiWish").value.trim(),
+            prefs = aiPrefs();
+          var prompt =
+            (place ? "想去/正在考虑：" + place + "\n" : "") +
+            (prefs.length ? "偏好：" + prefs.join("、") + "\n" : "") +
+            (wish || "按当前行程给几个不累人的随缘建议。只给可选项，不要变成打卡任务。");
+          btn.disabled = true;
+          $("aiRes").innerHTML = '<div class="ai-note">正在问路上会懂梗的旅行搭子…</div>';
+          function done() {
+            btn.disabled = false;
+          }
+          if (window.PTAI && PTAI.enabled()) {
+            PTAI.plan({
+              wish: prompt,
+              doc: { P: P, DAYS: DAYS, RES: RES, LANG: LANG, S: S },
+            })
+              .then(function (j) {
+                var recs = aiRecsFromResponse(j);
+                if (!recs.length) recs = aiDemoRecs(wish, place, prefs);
+                renderAIResult(recs, j.note || "这是 AI 给你的候补菜单，先预览，不自动改行程。");
+              })
+              .catch(function (e) {
+                renderAIResult(
+                  aiDemoRecs(wish, place, prefs),
+                  "AI_ENDPOINT 暂时没通，所以先展示本地演示结果。之后把 Mimo token 放在服务端转发，不要放前端。",
+                );
+              })
+              .then(done);
+          } else {
+            setTimeout(function () {
+              renderAIResult(
+                aiDemoRecs(wish, place, prefs),
+                "演示模式：位置和交互先确认，真接 Mimo 时仍走这个面板。",
+              );
+              done();
+            }, 360);
+          }
+        }
+        function initAI() {
+          if (!$("aiFab")) return;
+          $("aiFab").addEventListener("click", function () {
+            setAI(!$("aiPanel").classList.contains("on"));
+          });
+          $("aiClose").addEventListener("click", function () {
+            setAI(false);
+          });
+          $("aiPrefs").addEventListener("click", function (e) {
+            var b = e.target.closest ? e.target.closest("button[data-pref]") : null;
+            if (!b) return;
+            b.classList.toggle("on");
+          });
+          $("aiRun").addEventListener("click", runAI);
+          $("aiRes").addEventListener("click", function (e) {
+            var b = e.target.closest ? e.target.closest("button[data-ai-act]") : null;
+            if (!b) return;
+            aiAdd(+b.getAttribute("data-ai-idx"), b.getAttribute("data-ai-act"));
+          });
+        }
+        initAI();
 
         /* ---------- 右侧按钮 ---------- */
         $("btnFit").addEventListener("click", function () {
