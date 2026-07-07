@@ -4,12 +4,16 @@
  * 职责：把前端的 {messages, doc} 转成 Mimo 的对话请求，
  *       token 只存在这里的环境变量，前端永远看不到。
  *
- * 部署：
- *   supabase secrets set MIMO_API_KEY=xxx
+ * 完整部署步骤见 server/README.md（约 10 分钟）。速记：
+ *   supabase functions new ai-proxy
+ *   cp server/supabase-edge/ai-proxy.ts supabase/functions/ai-proxy/index.ts
+ *   supabase secrets set MIMO_API_KEY=你的key
  *   supabase functions deploy ai-proxy --no-verify-jwt
+ *   然后把返回的地址填进 app/config.js 的 AI_ENDPOINT
  * ========================================================================== */
 
-// Mimo 的 OpenAI 兼容入口（按你的实际服务商文档改）
+// ⚠️ 改成你的真实 Mimo 接口地址与模型名（见 server/README.md「准备」一节）
+// 这里按「OpenAI 兼容」格式写；若字段不同，改下面 fetch 的 body 与取文本那一行即可。
 const MIMO_URL = "https://api.mimo.example.com/v1/chat/completions";
 const MODEL = "mimo-latest";
 

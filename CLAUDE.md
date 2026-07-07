@@ -72,7 +72,10 @@ Single-page app with:
 - `save()` — writes state to localStorage (and queues cloud save); doc now carries `LANG`
 - `openEditor(id?, {mode, dayId})` — place add/edit sheet (plan or pool); map pick mode via `_pick`
 - `setSheetSnap("peek"|"mid"|"full")` — stop-detail sheet snap levels; opens at peek so bubbles stay visible; fixed action bar lives in `#sfoot`, nav opens a chooser popup (`openNavPop`), edit is tucked in the ⋯ menu, delete = long-press a plan card
-- AI buddy: `aiSend(text)` chat flow → `PTAI.chat({messages, doc})` when `AI_ENDPOINT` set, local demo otherwise; responses render as chat bubbles, place cards, or whole-route preview cards; adopting is always user-initiated (never auto-writes the doc). Fab eye states: `.think` (scanning) / `.ping` (reply flash)
+- AI buddy: `aiSend(text)` chat flow → `PTAI.chat({messages, doc})` when `AI_ENDPOINT` set, local demo otherwise; responses render as chat bubbles, place cards, or whole-route preview cards; adopting is always user-initiated (never auto-writes the doc). Fab eye states: `.think` (scanning) / `.ping` (reply flash) / `.happy` / `.wig` (idle micro-expressions via `aiIdleTick`); `?ai=1` on the trip URL auto-opens the panel (used by the homepage entry)
+- Swipe-to-delete: plan & pool cards are wrapped in `.swipe` (with a `.swipe-del` layer); `initSwipe(container)` binds the leftward drag, `openSwipe`/`closeSwipe` toggle. Reorder (`startReorder`) operates on the `.swipe` wrapper, not the inner `.card`. Delete goes through `deletePlaceFlow` (anchors double-confirm)
+- Recommendation sheet (`openRecSheet`) writes its actions into `#sfoot` (加入行程 / 收进随缘池 only, no nav) — must set `#sfoot` so stale buttons from a prior `openSheet` don't leak
+- `trip.html` has ONE authoritative `<style>` block; an old duplicate block was removed. `index.html` `tagCard` reads `PT.loadDocSync(id)` to show day/place counts + a cover, and `renderHomeAI(trips)` adds the homepage AI entry
 - `renderPresence(names)` / `syncSayTab()` — presence pill & 语言 tab visibility
 - Markers: stamp icons for anchors (time-based), pin icons for regular stops (numbered)
 

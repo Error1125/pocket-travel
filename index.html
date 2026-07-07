@@ -295,6 +295,61 @@
         pointer-events: none;
       }
 
+      /* 信息更丰富的行李牌 + 倾斜封面照 */
+      .tag.rich {
+        padding: 15px 15px 15px 24px;
+      }
+      .tag.rich .body {
+        gap: 7px;
+      }
+      .tag .stats {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--ink2);
+      }
+      .tag .stats .st {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+      }
+      .tag .cover {
+        flex: 0 0 auto;
+        width: 98px;
+        height: 76px;
+        align-self: center;
+        border-radius: 12px;
+        background-size: cover;
+        background-position: center;
+        border: 3px solid #fff;
+        box-shadow: 0 7px 18px rgba(23, 34, 51, 0.2);
+        transform: rotate(5deg);
+        transition: transform 0.18s ease;
+      }
+      .tag.rich:active .cover {
+        transform: rotate(3deg) scale(0.98);
+      }
+      .tag .cover.ph {
+        display: grid;
+        place-items: center;
+        font-size: 34px;
+        background: linear-gradient(150deg, #fbeee0, #e7dac4);
+        border-color: rgba(255, 255, 255, 0.9);
+      }
+      .tag.rich .more {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 30px;
+        height: 30px;
+        background: rgba(255, 255, 255, 0.72);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        z-index: 2;
+      }
+
       /* 新建卡 */
       .tag.new {
         justify-content: center;
@@ -638,6 +693,75 @@
         color: var(--ink3);
       }
 
+      /* ---------- 直接进入 AI 旅行搭子的入口 ---------- */
+      #homeAI {
+        position: fixed;
+        right: 18px;
+        bottom: calc(var(--sa-b) + 84px);
+        z-index: 180;
+        width: 56px;
+        height: 56px;
+        border: 0;
+        padding: 0;
+        border-radius: 18px;
+        background: linear-gradient(165deg, #ffffff, #eef1fb 68%, #e3e8f9);
+        border: 1px solid rgba(120, 134, 200, 0.24);
+        box-shadow: 0 10px 24px rgba(92, 108, 190, 0.28);
+        display: grid;
+        place-items: center;
+        animation: homeAIBob 3.8s ease-in-out infinite;
+      }
+      #homeAI:active {
+        transform: scale(0.94);
+      }
+      #homeAI .eyes {
+        position: relative;
+        width: 30px;
+        height: 16px;
+      }
+      #homeAI .eyes i {
+        position: absolute;
+        top: 2px;
+        width: 8px;
+        height: 12px;
+        border-radius: 3px;
+        background: #3d4a8f;
+        animation: homeAIBlink 5s infinite;
+      }
+      #homeAI .eyes i.l {
+        left: 3px;
+      }
+      #homeAI .eyes i.r {
+        right: 3px;
+      }
+      #homeAI .tip {
+        position: absolute;
+        right: 64px;
+        top: 50%;
+        transform: translateY(-50%);
+        white-space: nowrap;
+        background: rgba(27, 37, 48, 0.92);
+        color: #fff;
+        font-size: 12px;
+        font-weight: 700;
+        padding: 6px 10px;
+        border-radius: 10px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s;
+      }
+      #homeAI.hint .tip {
+        opacity: 1;
+      }
+      @keyframes homeAIBob {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-3px); }
+      }
+      @keyframes homeAIBlink {
+        0%, 44%, 46%, 100% { transform: scaleY(1); }
+        45% { transform: scaleY(0.15); }
+      }
+
       /* ---------- toast ---------- */
       #toast {
         position: fixed;
@@ -781,9 +905,11 @@
         /* ============ 登录（云端模式） ============ */
         var authMode = "signin";
         function renderAuth() {
-          // 登录页不该有底部操作栏：清掉挂在 body 上的常驻 dock（退出登录时残留的根因）
+          // 登录页不该有底部操作栏：清掉挂在 body 上的常驻 dock / AI 入口（退出登录时残留的根因）
           var _oldDock = $("dock");
           if (_oldDock) _oldDock.remove();
+          var _oldAI = $("homeAI");
+          if (_oldAI) _oldAI.remove();
           var oauthBtns = "";
           if (PT.authMethods.indexOf("apple") >= 0)
             oauthBtns +=
@@ -966,7 +1092,46 @@
 
           $("app").innerHTML = head + body + mode;
           renderDock();
+          renderHomeAI(trips);
           wireCards(trips);
+        }
+        /* 首页直达 AI 旅行搭子：打开最近（或第一份）行程并自动展开 AI 面板 */
+        function renderHomeAI(trips) {
+          var old = $("homeAI");
+          if (old) old.remove();
+          var btn = document.createElement("button");
+          btn.id = "homeAI";
+          btn.type = "button";
+          btn.setAttribute("aria-label", "AI 旅行搭子");
+          btn.innerHTML =
+            '<span class="tip">问问 AI 旅行搭子</span>' +
+            '<span class="eyes"><i class="l"></i><i class="r"></i></span>';
+          document.body.appendChild(btn);
+          /* 冒个泡提示一次它能点 */
+          setTimeout(function () {
+            btn.classList.add("hint");
+            setTimeout(function () {
+              btn.classList.remove("hint");
+            }, 2600);
+          }, 700);
+          btn.onclick = function () {
+            var lastId =
+              (PT._cache && PT._cache.getLast && PT._cache.getLast()) || null;
+            var ok =
+              lastId &&
+              trips.some(function (t) {
+                return t.id === lastId;
+              });
+            var target = ok ? lastId : trips[0] && trips[0].id;
+            if (target) {
+              PT._cache.setLast(target);
+              location.href =
+                "trip.html?trip=" + encodeURIComponent(target) + "&ai=1";
+            } else {
+              toast("先建一份行程，AI 搭子就能帮你往里加地点啦");
+              openCreate();
+            }
+          };
         }
         function userChip(u) {
           if (!u) return "";
@@ -991,20 +1156,57 @@
           var when = t.updatedAt
             ? '<span>· ' + fmtWhen(t.updatedAt) + "</span>"
             : "";
+          /* 从本地缓存的行程文档里算天数 / 地点数 + 取一张封面（离线、无网络请求）*/
+          var doc = (PT.loadDocSync && PT.loadDocSync(t.id)) || null;
+          var nDays = 0,
+            nPlaces = 0,
+            cover = "";
+          if (doc) {
+            nDays = (doc.DAYS || []).length;
+            if (doc.P) {
+              var ks = Object.keys(doc.P);
+              nPlaces = ks.length;
+              for (var i = 0; i < ks.length; i++) {
+                var pp = doc.P[ks[i]];
+                if (pp && pp.ph) {
+                  cover = pp.ph;
+                  break;
+                }
+              }
+            }
+          }
+          var nights = nDays > 1 ? nDays - 1 : 0;
+          var stats = "";
+          if (nDays)
+            stats +=
+              '<span class="st">📅 ' +
+              nDays +
+              "天" +
+              (nights ? nights + "晚" : "") +
+              "</span>";
+          if (nPlaces)
+            stats += '<span class="st">📍 ' + nPlaces + "个地点</span>";
+          var coverHtml = cover
+            ? '<div class="cover" style="background-image:url(\'' +
+              String(cover).replace(/'/g, "%27") +
+              '\')"></div>'
+            : '<div class="cover ph"><span>' +
+              esc(t.emoji || "🧳") +
+              "</span></div>";
           return (
-            '<div class="tag" data-open="' +
+            '<div class="tag rich" data-open="' +
             esc(t.id) +
             '">' +
-            '<div class="emoji">' +
-            esc(t.emoji || "🧳") +
-            "</div>" +
             '<div class="body"><div class="ttl">' +
             esc(t.title || "未命名行程") +
-            '</div><div class="meta">' +
+            "</div>" +
+            (stats ? '<div class="stats">' + stats + "</div>" : "") +
+            '<div class="meta">' +
             role +
             owner +
             when +
             "</div></div>" +
+            coverHtml +
             '<button class="more" data-menu="' +
             esc(t.id) +
             '">⋯</button>' +
