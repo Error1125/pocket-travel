@@ -14,7 +14,7 @@
 
 // ⚠️ 改成你的真实 Mimo 接口地址与模型名（见 server/README.md「准备」一节）
 // 这里按「OpenAI 兼容」格式写；若字段不同，改下面 fetch 的 body 与取文本那一行即可。
-const MIMO_URL = "https://api.xiaomimimo.com/v1";
+const MIMO_URL = "https://api.xiaomimimo.com/v1/chat/completions";
 const MODEL = "mimo-v2.5-pro";
 
 const SYSTEM_PROMPT = `你是「口袋旅行」App 里的 AI 旅行搭子。
@@ -46,10 +46,16 @@ const RATE_MAX = 10;
 Deno.serve(async (req: Request) => {
   const cors = {
     "Access-Control-Allow-Origin": "*", // 上线后建议改成你的 GitHub Pages 域名
-    "Access-Control-Allow-Headers": "content-type",
+    "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Content-Type": "application/json",
   };
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
+  if (req.method === "GET")
+    return new Response(
+      JSON.stringify({ ok: true, has_key: !!Deno.env.get("MIMO_API_KEY"), model: MODEL }),
+      { headers: cors },
+    );
   if (req.method !== "POST")
     return new Response(JSON.stringify({ error: "POST only" }), {
       status: 405,
@@ -88,6 +94,7 @@ Deno.serve(async (req: Request) => {
       },
       body: JSON.stringify({
         model: MODEL,
+        max_completion_tokens: 4096,
         response_format: { type: "json_object" },
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
@@ -105,6 +112,17 @@ Deno.serve(async (req: Request) => {
         ],
       }),
     });
+    if (!upstream.ok) {
+      // 把 MiMo 的真实错误透传成一句可读回复，方便前端/你排查
+      const errText = (await upstream.text()).slice(0, 500);
+      return new Response(
+        JSON.stringify({
+          reply: "⚠️ MiMo 返回错误 HTTP " + upstream.status + "：" + errText,
+          error: errText,
+        }),
+        { headers: cors },
+      );
+    }
     const data = await upstream.json();
     const text = data?.choices?.[0]?.message?.content ?? "{}";
     let out;

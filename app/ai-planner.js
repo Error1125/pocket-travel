@@ -58,12 +58,25 @@
           "AI 尚未接入：在 app/config.js 填 AI_ENDPOINT（服务端转发，token 留在服务端，见 server/）。",
         ),
       );
+    var headers = { "Content-Type": "application/json" };
+    /* Supabase 函数网关：带上 anon key（公开值）更稳，避免个别项目的网关 401。
+       函数本身用 --no-verify-jwt，不校验它；这里只是让网关放行。 */
+    if (cfg.SUPABASE_ANON_KEY) {
+      headers["apikey"] = cfg.SUPABASE_ANON_KEY;
+      headers["Authorization"] = "Bearer " + cfg.SUPABASE_ANON_KEY;
+    }
     return fetch(cfg.AI_ENDPOINT, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: headers,
       body: JSON.stringify(body),
     }).then(function (r) {
-      if (!r.ok) throw new Error("AI endpoint http " + r.status);
+      if (!r.ok) {
+        return r.text().then(function (t) {
+          throw new Error(
+            "AI 转发出错 HTTP " + r.status + (t ? "：" + t.slice(0, 300) : ""),
+          );
+        });
+      }
       return r.json();
     });
   }

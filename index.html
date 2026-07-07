@@ -635,6 +635,52 @@
       .menu-item.danger {
         color: var(--verm-d);
       }
+      /* 封面选择：预览 + 上传/移除 */
+      .cover-pick {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 14px;
+      }
+      .cover-prev {
+        flex: 0 0 auto;
+        width: 92px;
+        height: 70px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        font-size: 30px;
+        background: var(--paper);
+        background-size: cover;
+        background-position: center;
+        border: 1px dashed rgba(27, 37, 48, 0.18);
+      }
+      .cover-prev.has {
+        border: 2px solid #fff;
+        box-shadow: 0 4px 12px rgba(23, 34, 51, 0.16);
+      }
+      .cover-ops {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        align-items: flex-start;
+      }
+      .cover-ops .btn {
+        width: auto;
+        padding: 8px 12px;
+      }
+      .cover-ops .btn.ghost {
+        background: transparent;
+        border: 1px solid var(--line);
+        color: var(--ink2);
+      }
+      .cover-hint {
+        font-size: 11px;
+        color: var(--ink3);
+      }
+
       .emoji-row {
         display: flex;
         gap: 8px;
@@ -709,27 +755,27 @@
       }
       .ai-hero .mark {
         flex: none;
-        width: 38px;
-        height: 38px;
-        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        border-radius: 13px;
         display: grid;
         place-items: center;
-        background: linear-gradient(160deg, #5aa0ff, #3e7bd6);
-        box-shadow: 0 6px 14px rgba(62, 123, 214, 0.35);
+        background: radial-gradient(circle at 32% 26%, rgba(255, 255, 255, 0.95) 0 20%, rgba(255, 255, 255, 0) 46%), linear-gradient(165deg, #ffffff, #eef1fb 68%, #e3e8f9);
+        border: 1px solid rgba(120, 134, 200, 0.22);
+        box-shadow: 0 6px 14px rgba(92, 108, 190, 0.18),
+          inset 0 1px 0 rgba(255, 255, 255, 0.9);
       }
       .ai-hero .mark span {
         display: flex;
-        gap: 4px;
+        gap: 5px;
         align-items: center;
       }
       .ai-hero .mark i {
         width: 6px;
-        height: 14px;
-        border-radius: 4px;
-        background: #fff;
-      }
-      .ai-hero .mark i:first-child {
         height: 10px;
+        border-radius: 2.5px;
+        background: #3d4a8f;
+        animation: buddyBlink 5.2s infinite;
       }
       .ai-hero .tx {
         flex: 1;
@@ -776,33 +822,34 @@
         right: 18px;
         bottom: calc(var(--sa-b) + 84px);
         z-index: 180;
-        width: 56px;
-        height: 56px;
+        width: 54px;
+        height: 54px;
         border: 0;
         padding: 0;
-        border-radius: 50%;
-        background: linear-gradient(160deg, #5aa0ff, #3e7bd6);
-        box-shadow: 0 12px 26px rgba(62, 123, 214, 0.42);
+        border-radius: 17px;
+        background: radial-gradient(circle at 32% 26%, rgba(255, 255, 255, 0.95) 0 20%, rgba(255, 255, 255, 0) 46%), linear-gradient(165deg, #ffffff, #eef1fb 68%, #e3e8f9);
+        border: 1px solid rgba(120, 134, 200, 0.24);
+        box-shadow: 0 12px 26px rgba(92, 108, 190, 0.3),
+          inset 0 1px 0 rgba(255, 255, 255, 0.9);
         display: grid;
         place-items: center;
         transition: transform 0.16s ease;
+        animation: buddyBob 3.8s ease-in-out infinite;
       }
       #aiEntry:active {
         transform: scale(0.93);
       }
       #aiEntry .m {
         display: flex;
-        gap: 5px;
+        gap: 6px;
         align-items: center;
       }
       #aiEntry .m i {
-        width: 7px;
-        height: 17px;
-        border-radius: 4px;
-        background: #fff;
-      }
-      #aiEntry .m i:first-child {
-        height: 12px;
+        width: 8px;
+        height: 13px;
+        border-radius: 3px;
+        background: #3d4a8f;
+        animation: buddyBlink 5.2s infinite;
       }
 
       /* ---------- 全屏 AI 对话（从首页直接展开）---------- */
@@ -840,26 +887,27 @@
       }
       .ac-mark {
         flex: none;
-        width: 34px;
-        height: 34px;
-        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        border-radius: 12px;
         display: grid;
         place-items: center;
-        background: linear-gradient(160deg, #5aa0ff, #3e7bd6);
+        background: radial-gradient(circle at 32% 26%, rgba(255, 255, 255, 0.95) 0 20%, rgba(255, 255, 255, 0) 46%), linear-gradient(165deg, #ffffff, #eef1fb 68%, #e3e8f9);
+        border: 1px solid rgba(120, 134, 200, 0.22);
+        box-shadow: 0 4px 10px rgba(92, 108, 190, 0.16),
+          inset 0 1px 0 rgba(255, 255, 255, 0.9);
       }
       .ac-mark span {
         display: flex;
-        gap: 4px;
+        gap: 5px;
         align-items: center;
       }
       .ac-mark i {
         width: 6px;
-        height: 13px;
-        border-radius: 3px;
-        background: #fff;
-      }
-      .ac-mark i:first-child {
         height: 9px;
+        border-radius: 2.5px;
+        background: #3d4a8f;
+        animation: buddyBlink 5.2s infinite;
       }
       .ac-ttl {
         flex: 1;
@@ -1040,6 +1088,17 @@
       }
       #acSend[disabled] {
         opacity: 0.5;
+      }
+
+      @keyframes buddyBob {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-3px); }
+      }
+      @keyframes buddyBlink {
+        0%, 44%, 46%, 100% { transform: scaleY(1); }
+        45% { transform: scaleY(0.16); }
+        74%, 76% { transform: scaleY(1); }
+        75% { transform: scaleY(0.2); }
       }
 
       /* ---------- toast ---------- */
@@ -1748,11 +1807,13 @@
                   acRenderTrip(acDemoTrip(text));
                 }
               })
-              .catch(function () {
+              .catch(function (e) {
                 finish();
                 acBubble(
                   "assistant",
-                  "AI 服务暂时没接通，先用本地演示给你排一版（把 Mimo key 放服务端转发即可，见 server/README.md）：",
+                  "AI 没接通：" +
+                    ((e && e.message) || e) +
+                    "\n（先用本地演示给你排一版；排查见 server/README.md）",
                 );
                 acRenderTrip(acDemoTrip(text));
               });
@@ -1804,16 +1865,18 @@
             cover = "";
           if (doc) {
             nDays = (doc.DAYS || []).length;
+            if (doc.cover) cover = doc.cover; /* 用户自己导入的封面优先 */
             if (doc.P) {
               var ks = Object.keys(doc.P);
               nPlaces = ks.length;
-              for (var i = 0; i < ks.length; i++) {
-                var pp = doc.P[ks[i]];
-                if (pp && pp.ph) {
-                  cover = pp.ph;
-                  break;
+              if (!cover)
+                for (var i = 0; i < ks.length; i++) {
+                  var pp = doc.P[ks[i]];
+                  if (pp && pp.ph) {
+                    cover = pp.ph;
+                    break;
+                  }
                 }
-              }
             }
           }
           var nights = nDays > 1 ? nDays - 1 : 0;
@@ -1917,14 +1980,92 @@
           dock.id = "dock";
           dock.innerHTML =
             '<button class="btn" id="dImport">📥 导入 JSON</button>' +
-            join +
-            '<button class="btn primary" id="dNew">＋ 新建</button>';
+            join;
           document.body.appendChild(dock);
-          $("dNew").onclick = openCreate;
           $("dImport").onclick = function () {
             $("fileImport").click();
           };
           if ($("dJoin")) $("dJoin").onclick = openJoin;
+        }
+
+        /* ============ 封面图：导入本地图片（压成小缩略图存进行程文档）============ */
+        function pickImageCover(cb) {
+          var inp = document.createElement("input");
+          inp.type = "file";
+          inp.accept = "image/*";
+          inp.onchange = function () {
+            var f = inp.files && inp.files[0];
+            if (!f) return;
+            var url = URL.createObjectURL(f);
+            var img = new Image();
+            img.onload = function () {
+              URL.revokeObjectURL(url);
+              /* 裁成 ~4:3、最大 480×360，导出 JPEG，控制体积（localStorage/云都放得下）*/
+              var TW = 480,
+                TH = 360;
+              var cv = document.createElement("canvas");
+              cv.width = TW;
+              cv.height = TH;
+              var ctx = cv.getContext("2d");
+              var sr = img.width / img.height,
+                tr = TW / TH,
+                sw,
+                sh,
+                sx,
+                sy;
+              if (sr > tr) {
+                sh = img.height;
+                sw = sh * tr;
+                sx = (img.width - sw) / 2;
+                sy = 0;
+              } else {
+                sw = img.width;
+                sh = sw / tr;
+                sx = 0;
+                sy = (img.height - sh) / 2;
+              }
+              ctx.drawImage(img, sx, sy, sw, sh, 0, 0, TW, TH);
+              var data = "";
+              try {
+                data = cv.toDataURL("image/jpeg", 0.72);
+              } catch (e) {
+                toast("这张图读不了，换一张试试");
+                return;
+              }
+              if (data.length > 1500000) {
+                /* 极端大图再压一档，别撑爆本地存储 */
+                data = cv.toDataURL("image/jpeg", 0.55);
+              }
+              cb(data);
+            };
+            img.onerror = function () {
+              URL.revokeObjectURL(url);
+              toast("图片读取失败");
+            };
+            img.src = url;
+          };
+          inp.click();
+        }
+        /* 把封面写进行程文档（cover=""即移除，回落到 emoji/首图）*/
+        function setTripCover(id, coverUrl, cb) {
+          PT.loadDoc(id).then(
+            function (doc) {
+              doc = doc || {};
+              if (coverUrl) doc.cover = coverUrl;
+              else delete doc.cover;
+              return PT.saveDoc(id, doc);
+            },
+            function (e) {
+              toast((e && e.message) || "读取行程失败");
+            },
+          ).then(
+            function () {
+              if (cb) cb();
+            },
+            function (e) {
+              toast((e && e.message) || "封面保存失败");
+            },
+          );
         }
 
         /* ============ 新建 / 导入 ============ */
@@ -1941,16 +2082,46 @@
               "</button>"
             );
           }).join("");
+          var coverUrl = "";
           openSheet(
             "<h3>新建行程</h3>" +
               '<p class="desc">先起个名字，出发后再往里填地点。也可以直接用「导入 JSON」载入已有行程。</p>' +
               '<div class="field"><label>行程名字</label><input id="cTitle" placeholder="例：京都赏枫 5 日" /></div>' +
               '<label style="display:block;font-size:12px;color:var(--ink3);letter-spacing:1px;margin:0 0 8px 2px">封面</label>' +
+              '<div class="cover-pick"><div class="cover-prev" id="cPrev"><span>' +
+              esc(chosen) +
+              '</span></div><div class="cover-ops"><button type="button" class="btn" id="cUp">🖼 上传图片</button>' +
+              '<button type="button" class="btn ghost" id="cRm" style="display:none">移除图片</button>' +
+              '<div class="cover-hint">不上传就用下面的 emoji 当封面</div></div></div>' +
               '<div class="emoji-row" id="cEmoji">' +
               eh +
               "</div>" +
               '<button class="btn primary" id="cGo" style="width:100%">创建</button>',
           );
+          function cPaint() {
+            var prev = $("cPrev");
+            if (coverUrl) {
+              prev.style.backgroundImage = "url('" + coverUrl + "')";
+              prev.classList.add("has");
+              prev.innerHTML = "";
+              $("cRm").style.display = "";
+            } else {
+              prev.style.backgroundImage = "";
+              prev.classList.remove("has");
+              prev.innerHTML = "<span>" + esc(chosen) + "</span>";
+              $("cRm").style.display = "none";
+            }
+          }
+          $("cUp").onclick = function () {
+            pickImageCover(function (data) {
+              coverUrl = data;
+              cPaint();
+            });
+          };
+          $("cRm").onclick = function () {
+            coverUrl = "";
+            cPaint();
+          };
           [].forEach.call($("cEmoji").children, function (b) {
             b.onclick = function () {
               chosen = b.getAttribute("data-e");
@@ -1958,6 +2129,7 @@
                 x.classList.remove("on");
               });
               b.classList.add("on");
+              if (!coverUrl) cPaint();
             };
           });
           $("cGo").onclick = function () {
@@ -1966,9 +2138,14 @@
             $("cGo").disabled = true;
             PT.createTrip({ title: title, emoji: chosen }).then(
               function (t) {
-                closeSheet();
-                PT._cache.setLast(t.id);
-                location.href = "trip.html?trip=" + encodeURIComponent(t.id);
+                function go() {
+                  closeSheet();
+                  PT._cache.setLast(t.id);
+                  location.href =
+                    "trip.html?trip=" + encodeURIComponent(t.id);
+                }
+                if (coverUrl) setTripCover(t.id, coverUrl, go);
+                else go();
               },
               function (e) {
                 toast(e.message || "创建失败");
@@ -2069,6 +2246,9 @@
 
         function openRename(t) {
           var chosen = t.emoji || "🧳";
+          var curDoc = (PT.loadDocSync && PT.loadDocSync(t.id)) || null;
+          var coverUrl = (curDoc && curDoc.cover) || "";
+          var coverChanged = false;
           var eh = EMOJIS.map(function (e) {
             return (
               '<button data-e="' +
@@ -2081,16 +2261,48 @@
             );
           }).join("");
           openSheet(
-            "<h3>重命名</h3>" +
+            "<h3>重命名 / 换封面</h3>" +
               '<div class="field"><label>行程名字</label><input id="rTitle" value="' +
               esc(t.title) +
               '" /></div>' +
               '<label style="display:block;font-size:12px;color:var(--ink3);letter-spacing:1px;margin:0 0 8px 2px">封面</label>' +
+              '<div class="cover-pick"><div class="cover-prev" id="rPrev"><span>' +
+              esc(chosen) +
+              '</span></div><div class="cover-ops"><button type="button" class="btn" id="rUp">🖼 上传图片</button>' +
+              '<button type="button" class="btn ghost" id="rRm" style="display:none">移除图片</button>' +
+              '<div class="cover-hint">不上传就用下面的 emoji 当封面</div></div></div>' +
               '<div class="emoji-row" id="rEmoji">' +
               eh +
               "</div>" +
               '<button class="btn primary" id="rGo" style="width:100%">保存</button>',
           );
+          function rPaint() {
+            var prev = $("rPrev");
+            if (coverUrl) {
+              prev.style.backgroundImage = "url('" + coverUrl + "')";
+              prev.classList.add("has");
+              prev.innerHTML = "";
+              $("rRm").style.display = "";
+            } else {
+              prev.style.backgroundImage = "";
+              prev.classList.remove("has");
+              prev.innerHTML = "<span>" + esc(chosen) + "</span>";
+              $("rRm").style.display = "none";
+            }
+          }
+          rPaint();
+          $("rUp").onclick = function () {
+            pickImageCover(function (data) {
+              coverUrl = data;
+              coverChanged = true;
+              rPaint();
+            });
+          };
+          $("rRm").onclick = function () {
+            coverUrl = "";
+            coverChanged = true;
+            rPaint();
+          };
           [].forEach.call($("rEmoji").children, function (b) {
             b.onclick = function () {
               chosen = b.getAttribute("data-e");
@@ -2098,16 +2310,28 @@
                 x.classList.remove("on");
               });
               b.classList.add("on");
+              if (!coverUrl) rPaint();
             };
           });
           $("rGo").onclick = function () {
+            $("rGo").disabled = true;
             PT.renameTrip(t.id, {
               title: $("rTitle").value.trim() || t.title,
               emoji: chosen,
-            }).then(function () {
-              closeSheet();
-              loadList();
-            }, function (e) { toast(e.message||"保存失败"); });
+            }).then(
+              function () {
+                function done() {
+                  closeSheet();
+                  loadList();
+                }
+                if (coverChanged) setTripCover(t.id, coverUrl, done);
+                else done();
+              },
+              function (e) {
+                $("rGo").disabled = false;
+                toast(e.message || "保存失败");
+              },
+            );
           };
         }
 

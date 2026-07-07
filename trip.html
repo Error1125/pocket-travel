@@ -14666,11 +14666,13 @@
                   });
                 aiRenderResponse(j, sendTxt, prefs);
               })
-              .catch(function () {
+              .catch(function (e) {
                 finish();
                 aiBubble(
                   "assistant",
-                  "AI 服务暂时没接通，我先用本地演示给你搭一版（记得把 Mimo token 放服务端转发，别放前端）：",
+                  "AI 没接通：" +
+                    ((e && e.message) || e) +
+                    "（先用本地演示；排查见 server/README.md）",
                 );
                 var demo = aiDemoReply(sendTxt, prefs);
                 if (demo.route) $("aiChat").appendChild(aiRouteEl(demo.route));

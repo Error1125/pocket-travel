@@ -49,5 +49,5 @@ window.PT_CONFIG = {
   /* ── AI 行程规划（预留，见 app/ai-planner.js 的接口约定）──
    * 填你自己的转发地址后 PTAI.plan() 即可用；留空 = 未接入。 */
   AI_ENDPOINT:
-    "https://supabase.com/dashboard/project/yhgdxutmcouxonrurgkc/functions",
+    "https://yhgdxutmcouxonrurgkc.supabase.co/functions/v1/ai-proxy",
 };

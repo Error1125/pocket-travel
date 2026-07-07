@@ -59,14 +59,15 @@ supabase secrets set MIMO_API_KEY=apikey
 supabase functions deploy ai-proxy --no-verify-jwt
 ```
 
-部署完终端会给出地址，形如：
-`https://<project-ref>.functions.supabase.co/ai-proxy`
-
-把它填进 `app/config.js`：
+把**函数调用地址**填进 `app/config.js`（不是控制台 Dashboard 的网址！）：
 
 ```js
-AI_ENDPOINT: "https://<project-ref>.functions.supabase.co/ai-proxy",
+AI_ENDPOINT: "https://<project-ref>.supabase.co/functions/v1/ai-proxy",
 ```
+
+⚠️ 最常见的错误：把 Dashboard 网址
+`https://supabase.com/dashboard/project/<ref>/functions` 当成调用地址——
+那是给人看的后台页，POST 过去只会拿到 HTML，前端就一直显示「演示」。
 
 提交、推送到 GitHub Pages。打开 App → 点 AI 搭子 → 发一句话，
 若能收到不是「本地演示」的回复，就接通了。
@@ -74,7 +75,7 @@ AI_ENDPOINT: "https://<project-ref>.functions.supabase.co/ai-proxy",
 ### 自测一条命令
 
 ```bash
-curl -X POST "https://<project-ref>.functions.supabase.co/ai-proxy" \
+curl -X POST "https://<project-ref>.supabase.co/functions/v1/ai-proxy" \
   -H "Content-Type: application/json" \
   -d '{"messages":[{"role":"user","content":"银座附近雨天备用路线"}],"doc":{}}'
 ```
