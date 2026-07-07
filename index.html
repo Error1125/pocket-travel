@@ -1149,6 +1149,128 @@
           transform: rotate(360deg);
         }
       }
+      .ac-icon {
+        flex: none;
+        width: 34px;
+        height: 34px;
+        border: 0;
+        border-radius: 10px;
+        background: rgba(23, 34, 51, 0.06);
+        color: var(--ink2);
+        font-size: 16px;
+        line-height: 1;
+        cursor: pointer;
+      }
+      /* 思考过程（可展开） */
+      .ac-think {
+        align-self: flex-start;
+        max-width: 90%;
+        border: 1px dashed rgba(23, 34, 51, 0.16);
+        border-radius: 13px;
+        background: rgba(23, 34, 51, 0.03);
+        overflow: hidden;
+      }
+      .ac-think > summary {
+        list-style: none;
+        cursor: pointer;
+        padding: 7px 12px;
+        font-size: 12px;
+        font-weight: 800;
+        color: var(--ink3);
+      }
+      .ac-think > summary::-webkit-details-marker {
+        display: none;
+      }
+      .ac-think > summary::after {
+        content: " ▸";
+        color: var(--ink3);
+      }
+      .ac-think[open] > summary::after {
+        content: " ▾";
+      }
+      .ac-think-body {
+        padding: 2px 12px 11px;
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 1.6;
+        color: var(--ink2);
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+      /* 对话历史浮层 */
+      .ac-hist {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: calc(var(--sa-t) + 58px);
+        bottom: 0;
+        z-index: 5;
+        background: var(--paper);
+        display: flex;
+        flex-direction: column;
+        padding: 4px 16px 16px;
+      }
+      .ac-hist-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 2px 14px;
+      }
+      .ac-hist-head b {
+        font-size: 24px;
+        font-weight: 900;
+        color: var(--ink);
+      }
+      .ac-hist-head button {
+        border: 1px solid rgba(23, 34, 51, 0.14);
+        background: #fff;
+        border-radius: 999px;
+        padding: 9px 16px;
+        font-size: 14px;
+        font-weight: 800;
+        color: var(--ink);
+        cursor: pointer;
+      }
+      .ac-hist-list {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .ac-hist-item {
+        border: 1.5px solid rgba(23, 34, 51, 0.14);
+        border-radius: 18px;
+        padding: 16px 18px;
+        background: rgba(150, 175, 240, 0.09);
+        cursor: pointer;
+        text-align: left;
+        width: 100%;
+      }
+      .ac-hist-item.cur {
+        border-color: #8aa0ff;
+        background: rgba(150, 175, 240, 0.2);
+      }
+      .ac-hist-item .t {
+        font-size: 16px;
+        font-weight: 800;
+        color: var(--ink);
+        margin-bottom: 6px;
+      }
+      .ac-hist-item .m {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--ink3);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .ac-hist-empty {
+        color: var(--ink3);
+        font-size: 14px;
+        text-align: center;
+        padding: 40px 0;
+      }
     </style>
   </head>
   <body>
@@ -1479,6 +1601,153 @@
         var acBusy = false;
         var acProposals = {};
         var acSeq = 0;
+        /* ============ 首页对话历史（可翻看 / 新建 / 回放）+ 思考过程 ============ */
+        var AC_HKEY = "pt_ai_home_hist";
+        function acHistSave() {
+          try {
+            localStorage.setItem(AC_HKEY, JSON.stringify(acHist));
+          } catch (e) {}
+        }
+        var acHist =
+          (function () {
+            try {
+              return JSON.parse(localStorage.getItem(AC_HKEY) || "null") || null;
+            } catch (e) {
+              return null;
+            }
+          })() || { convs: [], curId: null };
+        function acNewConv() {
+          var c = {
+            id: "h" + Date.now().toString(36),
+            title: "",
+            ts: Date.now(),
+            msgs: [],
+            tr: [],
+          };
+          acHist.convs.unshift(c);
+          acHist.curId = c.id;
+          if (acHist.convs.length > 30) acHist.convs.length = 30;
+          acMsgs = c.msgs;
+          acHistSave();
+          return c;
+        }
+        function acCurConv() {
+          var c = null;
+          for (var i = 0; i < acHist.convs.length; i++)
+            if (acHist.convs[i].id === acHist.curId) {
+              c = acHist.convs[i];
+              break;
+            }
+          if (!c) c = acNewConv();
+          acMsgs = c.msgs; /* 让发给模型的历史与当前会话保持同一数组 */
+          return c;
+        }
+        function acRec(item) {
+          var c = acCurConv();
+          c.tr.push(item);
+          c.ts = Date.now();
+          if (!c.title && item.k === "user")
+            c.title = String(item.text || "").slice(0, 24);
+          acHistSave();
+        }
+        /* 思考过程（可展开）：MiMo 的 reasoning_content */
+        function acReasoningEl(text) {
+          var d = document.createElement("details");
+          d.className = "ac-think";
+          var s = document.createElement("summary");
+          s.textContent = "💭 思考过程";
+          var b = document.createElement("div");
+          b.className = "ac-think-body";
+          b.textContent = String(text || "");
+          d.appendChild(s);
+          d.appendChild(b);
+          $("acBody").appendChild(d);
+          acScroll();
+          return d;
+        }
+        function acReplay(tr) {
+          var b = $("acBody");
+          b.innerHTML = "";
+          (tr || []).forEach(function (it) {
+            if (it.k === "user") acBubble("user", it.text);
+            else if (it.k === "bot") acBubble("assistant", it.text);
+            else if (it.k === "think") acReasoningEl(it.text);
+            else if (it.k === "trip" && it.trip) acRenderTrip(it.trip);
+          });
+          acScroll();
+        }
+        function acConvSub(c) {
+          for (var i = c.tr.length - 1; i >= 0; i--) {
+            if (c.tr[i].k === "trip")
+              return (
+                "🧳 " + ((c.tr[i].trip && c.tr[i].trip.title) || "行程提案")
+              );
+            if (c.tr[i].k === "bot") return c.tr[i].text || "";
+          }
+          return "";
+        }
+        function acRenderHist() {
+          var box = $("acHistList");
+          if (!acHist.convs.length) {
+            box.innerHTML =
+              '<div class="ac-hist-empty">还没有对话，点「新建」开始聊～</div>';
+            return;
+          }
+          box.innerHTML = acHist.convs
+            .map(function (c) {
+              var w = new Date(c.ts);
+              var hm =
+                ("0" + w.getHours()).slice(-2) +
+                ":" +
+                ("0" + w.getMinutes()).slice(-2);
+              var sub = acConvSub(c);
+              return (
+                '<button class="ac-hist-item' +
+                (c.id === acHist.curId ? " cur" : "") +
+                '" data-conv="' +
+                c.id +
+                '"><div class="t">' +
+                esc(c.title || "新对话") +
+                '</div><div class="m">' +
+                hm +
+                (sub ? "　" + esc(sub.slice(0, 28)) : "") +
+                "</div></button>"
+              );
+            })
+            .join("");
+        }
+        function acToggleHist() {
+          var box = $("acHistBox");
+          if (box.hidden) {
+            acRenderHist();
+            box.hidden = false;
+          } else box.hidden = true;
+        }
+        function acOpenConv(id) {
+          acHist.curId = id;
+          acHistSave();
+          var c = acCurConv();
+          $("acHistBox").hidden = true;
+          if (c.tr.length) acReplay(c.tr);
+          else {
+            $("acBody").innerHTML = "";
+            acWelcome();
+          }
+        }
+        function acStartNew() {
+          var c = acCurConv();
+          if (c.tr && c.tr.length) acNewConv();
+          else {
+            c.title = "";
+            c.ts = Date.now();
+            c.msgs.length = 0;
+            c.tr.length = 0;
+            acHistSave();
+          }
+          $("acHistBox").hidden = true;
+          $("acBody").innerHTML = "";
+          acWelcome();
+        }
         function acEl() {
           var el = $("aichat");
           if (el) return el;
@@ -1489,6 +1758,12 @@
             '<button class="ac-back" id="acBack">‹</button>' +
             '<div class="ac-mark"><span><i></i><i></i></span></div>' +
             '<div class="ac-ttl"><b>AI 旅行搭子</b><small>规划整趟 · 加目的地</small></div>' +
+            '<button class="ac-icon" id="acHistBtn" title="对话历史">🕘</button>' +
+            '<button class="ac-icon" id="acNewBtn" title="新建对话">✎</button>' +
+            "</div>" +
+            '<div class="ac-hist" id="acHistBox" hidden>' +
+            '<div class="ac-hist-head"><b>对话</b><button id="acNewBtn2" type="button">✎ 新建</button></div>' +
+            '<div class="ac-hist-list" id="acHistList"></div>' +
             "</div>" +
             '<div class="ac-body" id="acBody"></div>' +
             '<div class="ac-inputbar">' +
@@ -1506,15 +1781,30 @@
               acSend(this.value);
             }
           });
+          $("acHistBtn").onclick = acToggleHist;
+          $("acNewBtn").onclick = acStartNew;
+          $("acNewBtn2").onclick = acStartNew;
+          $("acHistList").addEventListener("click", function (e) {
+            var b = e.target.closest ? e.target.closest("[data-conv]") : null;
+            if (b) acOpenConv(b.getAttribute("data-conv"));
+          });
           return el;
         }
         function openAIChat(prefill) {
           var el = acEl();
           el.classList.add("on");
           document.body.style.overflow = "hidden";
-          if (!$("acBody").childElementCount) acWelcome();
+          $("acHistBox").hidden = true;
+          if (!$("acBody").childElementCount) {
+            var c0 = acCurConv();
+            if (c0.tr && c0.tr.length) acReplay(c0.tr);
+            else acWelcome();
+          }
           if (prefill) acSend(prefill);
-          else setTimeout(function () { $("acInput").focus(); }, 320);
+          else
+            setTimeout(function () {
+              $("acInput").focus();
+            }, 320);
         }
         function closeAIChat() {
           var el = $("aichat");
@@ -1764,7 +2054,9 @@
           acBusy = true;
           $("acSend").disabled = true;
           $("acInput").value = "";
+          acCurConv(); /* 绑定当前会话，acMsgs 指向它，消息持久化 */
           acBubble("user", text);
+          acRec({ k: "user", text: text });
           var thinking = acBubble("assistant", "想想…");
           thinking.classList.add("thinking");
           acMsgs.push({ role: "user", content: text });
@@ -1781,57 +2073,68 @@
             PTAI.chat({ messages: acMsgs.slice(-12), doc: {}, want: "trip" })
               .then(function (j) {
                 finish();
-                if (j && (j.reply || j.note)) {
-                  acMsgs.push({
-                    role: "assistant",
-                    content: j.reply || j.note,
-                  });
-                  acBubble("assistant", j.reply || j.note);
+                if (j && j.reasoning) {
+                  acReasoningEl(j.reasoning);
+                  acRec({ k: "think", text: j.reasoning });
+                }
+                var replyTxt = j && (j.reply || j.note);
+                if (replyTxt) {
+                  acMsgs.push({ role: "assistant", content: replyTxt });
+                  acBubble("assistant", replyTxt);
+                  acRec({ k: "bot", text: replyTxt });
                 }
                 if (j && j.trip && j.trip.days && j.trip.days.length) {
                   acRenderTrip(j.trip);
+                  acRec({ k: "trip", trip: j.trip });
                 } else if (j && j.P && Object.keys(j.P).length && wantsTrip) {
                   /* 只给了地点没给天：包成一天的行程提案 */
-                  acRenderTrip({
+                  var tp = {
                     title: "AI 推荐地点",
                     emoji: "📍",
                     P: j.P,
                     days: [
                       { date: "Day 1", title: "精选", plan: Object.keys(j.P) },
                     ],
-                  });
-                } else if (!j || (!j.reply && !j.note)) {
-                  acBubble(
-                    "assistant",
-                    "我先按演示帮你排一版（接上 Mimo 后会是真实推荐）：",
-                  );
-                  acRenderTrip(acDemoTrip(text));
+                  };
+                  acRenderTrip(tp);
+                  acRec({ k: "trip", trip: tp });
+                } else if (!replyTxt) {
+                  var dm = "我先按演示帮你排一版（接上 Mimo 后会是真实推荐）：";
+                  acBubble("assistant", dm);
+                  acRec({ k: "bot", text: dm });
+                  var dt = acDemoTrip(text);
+                  acRenderTrip(dt);
+                  acRec({ k: "trip", trip: dt });
                 }
               })
               .catch(function (e) {
                 finish();
-                acBubble(
-                  "assistant",
+                var em =
                   "AI 没接通：" +
-                    ((e && e.message) || e) +
-                    "\n（先用本地演示给你排一版；排查见 server/README.md）",
-                );
-                acRenderTrip(acDemoTrip(text));
+                  ((e && e.message) || e) +
+                  "\n（先用本地演示给你排一版；排查见 server/README.md）";
+                acBubble("assistant", em);
+                acRec({ k: "bot", text: em });
+                var dt = acDemoTrip(text);
+                acRenderTrip(dt);
+                acRec({ k: "trip", trip: dt });
               });
           } else {
             setTimeout(function () {
               finish();
               if (wantsTrip) {
-                acBubble(
-                  "assistant",
-                  "还没接入真实 AI，先用演示帮你排一版看看交互——接上 Mimo（见 server/README.md）后就是真实推荐和坐标：",
-                );
-                acRenderTrip(acDemoTrip(text));
+                var m1 =
+                  "还没接入真实 AI，先用演示帮你排一版看看交互——接上 Mimo（见 server/README.md）后就是真实推荐和坐标：";
+                acBubble("assistant", m1);
+                acRec({ k: "bot", text: m1 });
+                var dt = acDemoTrip(text);
+                acRenderTrip(dt);
+                acRec({ k: "trip", trip: dt });
               } else {
-                acBubble(
-                  "assistant",
-                  "我可以帮你规划整趟行程、加目的地。试试说「帮我做个东京 5 日轻松行」。接上 Mimo 后我还能给真实推荐。",
-                );
+                var m2 =
+                  "我可以帮你规划整趟行程、加目的地。试试说「帮我做个东京 5 日轻松行」。接上 Mimo 后我还能给真实推荐。";
+                acBubble("assistant", m2);
+                acRec({ k: "bot", text: m2 });
               }
             }, 500 + Math.random() * 300);
           }

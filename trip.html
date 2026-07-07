@@ -3197,16 +3197,7 @@
           <b>AI 旅行搭子</b>
           <small>只给预览，不会自动改你的行程</small>
         </div>
-        <button id="aiHistBtn" type="button" title="对话历史">🕘</button>
-        <button id="aiNewBtn" type="button" title="新建对话">✎</button>
         <button id="aiClose" type="button">✕</button>
-      </div>
-      <div class="ai-hist" id="aiHistBox" hidden>
-        <div class="ai-hist-head">
-          <b>对话</b>
-          <button id="aiNewBtn2" type="button">✎ 新建</button>
-        </div>
-        <div class="ai-hist-list" id="aiHistList"></div>
       </div>
       <div class="ai-chat" id="aiChat"></div>
       <div class="ai-prefrow" id="aiPrefs">
@@ -14604,7 +14595,6 @@
             closeSheet();
             dismissBubbles();
             snapTo(snapPeek);
-            $("aiHistBox").hidden = true;
             if (!$("aiChat").childElementCount) {
               var c0 = aiCurConv();
               if (c0.tr && c0.tr.length) aiReplay(c0.tr);
@@ -15071,13 +15061,6 @@
           });
           $("aiClose").addEventListener("click", function () {
             setAI(false);
-          });
-          $("aiHistBtn").addEventListener("click", aiToggleHist);
-          $("aiNewBtn").addEventListener("click", aiStartNew);
-          $("aiNewBtn2").addEventListener("click", aiStartNew);
-          $("aiHistList").addEventListener("click", function (e) {
-            var b = e.target.closest ? e.target.closest("[data-conv]") : null;
-            if (b) aiOpenConv(b.getAttribute("data-conv"));
           });
           $("aiPrefs").addEventListener("click", function (e) {
             var b = e.target.closest
