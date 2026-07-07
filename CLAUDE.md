@@ -22,6 +22,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 index.html          Homepage: trip list, auth (cloud), import/export, sharing
 trip.html           Trip planner: map + daily itinerary + pool stops + language guide
 app/config.js       Mode switch: Supabase URL/key (empty = local mode), auth methods, app name
+server/             AI proxy examples — Mimo token lives in server env vars, NEVER in frontend
 app/store.js        Data layer (window.PT): unified API over local and cloud backends
 vendor/supabase.js  Bundled Supabase client (no CDN dependency)
 db/schema.sql       Supabase schema: tables, RLS policies, RPC functions, realtime
@@ -70,6 +71,8 @@ Single-page app with:
 - `navUrl(p)` — generates Google Maps or Yahoo! Transit deep link
 - `save()` — writes state to localStorage (and queues cloud save); doc now carries `LANG`
 - `openEditor(id?, {mode, dayId})` — place add/edit sheet (plan or pool); map pick mode via `_pick`
+- `setSheetSnap("peek"|"mid"|"full")` — stop-detail sheet snap levels; opens at peek so bubbles stay visible; fixed action bar lives in `#sfoot`, nav opens a chooser popup (`openNavPop`), edit is tucked in the ⋯ menu, delete = long-press a plan card
+- AI buddy: `aiSend(text)` chat flow → `PTAI.chat({messages, doc})` when `AI_ENDPOINT` set, local demo otherwise; responses render as chat bubbles, place cards, or whole-route preview cards; adopting is always user-initiated (never auto-writes the doc). Fab eye states: `.think` (scanning) / `.ping` (reply flash)
 - `renderPresence(names)` / `syncSayTab()` — presence pill & 语言 tab visibility
 - Markers: stamp icons for anchors (time-based), pin icons for regular stops (numbered)
 
