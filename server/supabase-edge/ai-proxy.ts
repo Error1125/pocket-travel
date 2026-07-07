@@ -37,7 +37,12 @@ const SYSTEM_PROMPT = `你是「口袋旅行」App 里的 AI 旅行搭子。
 4. 坐标必须真实可导航；拿不准就别编，改为在 reply 里说明或减少地点。
 5. 也支持：半日路线、雨天备用、二次元/购物优先、轻松不赶、
    "当前地点附近 90 分钟怎么晃"、"两个锚点之间塞什么最顺"。
-6. 回复口语化、简短，像会懂梗的旅行搭子。`;
+6. 回复口语化、简短，像会懂梗的旅行搭子。
+7. ★路线硬性要求：当用户说"生成/来一条/规划……路线"（半日、雨天备用、
+   附近 90 分钟、二次元/购物优先等），必须返回 route（{title, ids}）和对应的
+   P（每个点带真实经纬度），且 route.ids 必须都能在 P 里找到；绝不能只在
+   reply 里用文字描述路线而不给 route。若一时给不全坐标，就减少站点数量，
+   但仍要给出 route 结构。`;
 
 // 极简限流：每 IP 每小时 N 次（防止被人白嫖你的 Mimo 配额）
 const RATE = new Map<string, { n: number; t: number }>();
@@ -108,6 +113,15 @@ Deno.serve(async (req: Request) => {
                 },
               ]
             : []),
+          ...(want === "route"
+            ? [
+                {
+                  role: "system",
+                  content:
+                    "本次用户想要一条具体路线：必须返回 route（title + ids）和对应的 P（每个点带真实经纬度），route.ids 都要能在 P 里找到，不要只用文字描述。",
+                },
+              ]
+            : []),
           ...messages.slice(-12),
         ],
       }),
@@ -124,13 +138,17 @@ Deno.serve(async (req: Request) => {
       );
     }
     const data = await upstream.json();
-    const text = data?.choices?.[0]?.message?.content ?? "{}";
+    const msg = data?.choices?.[0]?.message ?? {};
+    const text = msg.content ?? "{}";
+    const reasoning = msg.reasoning_content || ""; // MiMo 思考模式的思维链
     let out;
     try {
       out = JSON.parse(text);
     } catch {
       out = { reply: text };
     } // 模型没按 JSON 输出时兜底成纯聊天
+    // 把思考过程一并带回前端（可展开查看）；模型没开思考时为空、不影响其他字段
+    if (reasoning && out && typeof out === "object") out.reasoning = reasoning;
     return new Response(JSON.stringify(out), { headers: cors });
   } catch (e) {
     return new Response(JSON.stringify({ error: String(e) }), {

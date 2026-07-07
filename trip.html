@@ -2856,6 +2856,39 @@
         0%, 100% { opacity: 0.55; }
         50% { opacity: 1; }
       }
+      /* 思考过程（可展开）：低调、不抢回复 */
+      .ai-think {
+        align-self: flex-start;
+        max-width: 90%;
+        border: 1px dashed rgba(23, 34, 51, 0.16);
+        border-radius: 13px;
+        background: rgba(23, 34, 51, 0.03);
+        overflow: hidden;
+      }
+      .ai-think > summary {
+        list-style: none;
+        cursor: pointer;
+        padding: 7px 12px;
+        font-size: 12px;
+        font-weight: 800;
+        color: var(--ink3);
+        user-select: none;
+      }
+      .ai-think > summary::-webkit-details-marker { display: none; }
+      .ai-think > summary::after {
+        content: " ▸";
+        color: var(--ink3);
+      }
+      .ai-think[open] > summary::after { content: " ▾"; }
+      .ai-think-body {
+        padding: 2px 12px 11px;
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 1.6;
+        color: var(--ink2, #4a5568);
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
       /* 欢迎快捷提问（大按钮，像对话开场） */
       .ai-starters {
         align-self: flex-start;
@@ -3027,6 +3060,94 @@
       #aiSend[disabled] {
         opacity: 0.5;
       }
+      /* 对话历史（头部按钮 + 列表浮层） */
+      .ai-head #aiHistBtn,
+      .ai-head #aiNewBtn {
+        border: none;
+        background: rgba(23, 34, 51, 0.06);
+        color: var(--ink2, #4a5568);
+        width: 30px;
+        height: 30px;
+        margin-left: 4px;
+        border-radius: 9px;
+        font-size: 15px;
+        line-height: 1;
+        cursor: pointer;
+        flex: none;
+      }
+      .ai-hist {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 54px;
+        bottom: 0;
+        z-index: 4;
+        background: var(--paper, #fff);
+        display: flex;
+        flex-direction: column;
+        padding: 4px 14px 16px;
+      }
+      .ai-hist-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 2px 14px;
+      }
+      .ai-hist-head b {
+        font-size: 22px;
+        font-weight: 900;
+        color: var(--ink);
+      }
+      .ai-hist-head button {
+        border: 1px solid rgba(23, 34, 51, 0.14);
+        background: #fff;
+        border-radius: 999px;
+        padding: 8px 15px;
+        font-size: 13px;
+        font-weight: 800;
+        color: var(--ink);
+        cursor: pointer;
+      }
+      .ai-hist-list {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .ai-hist-item {
+        border: 1.5px solid rgba(23, 34, 51, 0.14);
+        border-radius: 16px;
+        padding: 13px 16px;
+        background: rgba(150, 175, 240, 0.09);
+        cursor: pointer;
+        text-align: left;
+        width: 100%;
+      }
+      .ai-hist-item.cur {
+        border-color: #8aa0ff;
+        background: rgba(150, 175, 240, 0.2);
+      }
+      .ai-hist-item .t {
+        font-size: 15px;
+        font-weight: 800;
+        color: var(--ink);
+        margin-bottom: 5px;
+      }
+      .ai-hist-item .m {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--ink3);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .ai-hist-empty {
+        color: var(--ink3);
+        font-size: 13px;
+        text-align: center;
+        padding: 34px 0;
+      }
     </style>
   </head>
   <body>
@@ -3076,7 +3197,16 @@
           <b>AI 旅行搭子</b>
           <small>只给预览，不会自动改你的行程</small>
         </div>
+        <button id="aiHistBtn" type="button" title="对话历史">🕘</button>
+        <button id="aiNewBtn" type="button" title="新建对话">✎</button>
         <button id="aiClose" type="button">✕</button>
+      </div>
+      <div class="ai-hist" id="aiHistBox" hidden>
+        <div class="ai-hist-head">
+          <b>对话</b>
+          <button id="aiNewBtn2" type="button">✎ 新建</button>
+        </div>
+        <div class="ai-hist-list" id="aiHistList"></div>
       </div>
       <div class="ai-chat" id="aiChat"></div>
       <div class="ai-prefrow" id="aiPrefs">
@@ -14207,6 +14337,143 @@
          * 真接 Mimo：走 PTAI.chat() → AI_ENDPOINT（服务端转发，token 永不进前端）。
          * 未接入时用本地演示逻辑，交互完全一致。 */
         var aiMsgs = []; /* {role:"user"|"assistant", content} 发给服务端的对话历史 */
+        /* ============ 对话历史：每个行程各自保存，可翻看 / 新建 ============ */
+        function aiHistKey() {
+          var id = "";
+          try {
+            id = new URLSearchParams(location.search).get("trip") || "";
+          } catch (e) {}
+          return "pt_ai_hist_" + (id || "local");
+        }
+        function aiHistSave() {
+          try {
+            localStorage.setItem(aiHistKey(), JSON.stringify(aiHist));
+          } catch (e) {}
+        }
+        var aiHist = (function () {
+          try {
+            return JSON.parse(localStorage.getItem(aiHistKey()) || "null") || null;
+          } catch (e) {
+            return null;
+          }
+        })() || { convs: [], curId: null };
+        function aiNewConv() {
+          var c = {
+            id: "c" + Date.now().toString(36),
+            title: "",
+            ts: Date.now(),
+            msgs: [],
+            tr: [],
+          };
+          aiHist.convs.unshift(c);
+          aiHist.curId = c.id;
+          if (aiHist.convs.length > 30) aiHist.convs.length = 30;
+          aiMsgs = c.msgs;
+          aiHistSave();
+          return c;
+        }
+        function aiCurConv() {
+          var c = null;
+          for (var i = 0; i < aiHist.convs.length; i++)
+            if (aiHist.convs[i].id === aiHist.curId) {
+              c = aiHist.convs[i];
+              break;
+            }
+          if (!c) c = aiNewConv();
+          aiMsgs = c.msgs; /* 让发给模型的历史与当前会话保持同一个数组 */
+          return c;
+        }
+        function aiRec(item) {
+          var c = aiCurConv();
+          c.tr.push(item);
+          c.ts = Date.now();
+          if (!c.title && item.k === "user")
+            c.title = String(item.text || "").slice(0, 24);
+          aiHistSave();
+        }
+        function aiReplay(tr) {
+          var c = $("aiChat");
+          c.innerHTML = "";
+          (tr || []).forEach(function (it) {
+            if (it.k === "user") aiBubble("user", it.text);
+            else if (it.k === "bot") aiBubble("assistant", it.text);
+            else if (it.k === "think") aiReasoningEl(it.text);
+            else if (it.k === "route" && it.route)
+              c.appendChild(aiRouteEl(it.route));
+            else if (it.k === "card" && it.rec) c.appendChild(aiCardEl(it.rec));
+          });
+          aiScroll();
+        }
+        function aiConvSub(c) {
+          for (var i = c.tr.length - 1; i >= 0; i--) {
+            if (c.tr[i].k === "bot") return c.tr[i].text || "";
+            if (c.tr[i].k === "route")
+              return "🧭 " + ((c.tr[i].route && c.tr[i].route.title) || "路线");
+          }
+          return "";
+        }
+        function aiRenderHist() {
+          var box = $("aiHistList");
+          if (!aiHist.convs.length) {
+            box.innerHTML =
+              '<div class="ai-hist-empty">还没有对话，点「新建」开始聊～</div>';
+            return;
+          }
+          box.innerHTML = aiHist.convs
+            .map(function (c) {
+              var when = new Date(c.ts);
+              var hm =
+                ("0" + when.getHours()).slice(-2) +
+                ":" +
+                ("0" + when.getMinutes()).slice(-2);
+              var sub = aiConvSub(c);
+              return (
+                '<button class="ai-hist-item' +
+                (c.id === aiHist.curId ? " cur" : "") +
+                '" data-conv="' +
+                c.id +
+                '"><div class="t">' +
+                esc(c.title || "新对话") +
+                '</div><div class="m">' +
+                hm +
+                (sub ? "　" + esc(sub.slice(0, 28)) : "") +
+                "</div></button>"
+              );
+            })
+            .join("");
+        }
+        function aiToggleHist() {
+          var box = $("aiHistBox");
+          if (box.hidden) {
+            aiRenderHist();
+            box.hidden = false;
+          } else box.hidden = true;
+        }
+        function aiOpenConv(id) {
+          aiHist.curId = id;
+          aiHistSave();
+          var c = aiCurConv();
+          $("aiHistBox").hidden = true;
+          if (c.tr.length) aiReplay(c.tr);
+          else {
+            $("aiChat").innerHTML = "";
+            aiWelcome();
+          }
+        }
+        function aiStartNew() {
+          var c = aiCurConv();
+          if (c.tr && c.tr.length) aiNewConv();
+          else {
+            c.title = "";
+            c.ts = Date.now();
+            c.msgs.length = 0;
+            c.tr.length = 0;
+            aiHistSave();
+          }
+          $("aiHistBox").hidden = true;
+          $("aiChat").innerHTML = "";
+          aiWelcome();
+        }
         var aiRecStore = {}; /* key → rec，聊天流里所有可落库的卡片 */
         var aiRecSeq = 0;
         var aiBusy = false;
@@ -14337,7 +14604,12 @@
             closeSheet();
             dismissBubbles();
             snapTo(snapPeek);
-            if (!$("aiChat").childElementCount) aiWelcome();
+            $("aiHistBox").hidden = true;
+            if (!$("aiChat").childElementCount) {
+              var c0 = aiCurConv();
+              if (c0.tr && c0.tr.length) aiReplay(c0.tr);
+              else aiWelcome();
+            }
           }
         }
         function closeAI(force) {
@@ -14377,6 +14649,21 @@
           var d = document.createElement("div");
           d.className = "ai-msg " + (role === "user" ? "me" : "bot");
           d.textContent = text;
+          $("aiChat").appendChild(d);
+          aiScroll();
+          return d;
+        }
+        /* 思考过程：默认收起，点开可看模型的思维链（MiMo 的 reasoning_content）*/
+        function aiReasoningEl(text) {
+          var d = document.createElement("details");
+          d.className = "ai-think";
+          var s = document.createElement("summary");
+          s.textContent = "💭 思考过程";
+          var body = document.createElement("div");
+          body.className = "ai-think-body";
+          body.textContent = String(text || "");
+          d.appendChild(s);
+          d.appendChild(body);
           $("aiChat").appendChild(d);
           aiScroll();
           return d;
@@ -14557,8 +14844,15 @@
         }
         function aiRenderResponse(j, fallbackTxt, prefs) {
           var chat = $("aiChat");
-          if (j && j.reply) aiBubble("assistant", j.reply);
-          else if (j && j.note) aiBubble("assistant", j.note);
+          if (j && j.reasoning) {
+            aiReasoningEl(j.reasoning);
+            aiRec({ k: "think", text: j.reasoning });
+          }
+          var replyTxt = j && (j.reply || j.note);
+          if (replyTxt) {
+            aiBubble("assistant", replyTxt);
+            aiRec({ k: "bot", text: replyTxt });
+          }
           var recs = aiRecsFromP(j && j.P);
           /* 服务端可给 route: {title, ids:[P 里的 key 顺序]} → 整条路线预览 */
           if (j && j.route && j.route.ids && recs.length) {
@@ -14572,7 +14866,9 @@
               })
               .filter(Boolean);
             if (rr.length) {
-              chat.appendChild(aiRouteEl({ title: j.route.title, recs: rr }));
+              var route = { title: j.route.title, recs: rr };
+              chat.appendChild(aiRouteEl(route));
+              aiRec({ k: "route", route: route });
               aiScroll();
               return;
             }
@@ -14580,18 +14876,23 @@
           if (recs.length) {
             recs.forEach(function (r) {
               chat.appendChild(aiCardEl(r));
+              aiRec({ k: "card", rec: r });
             });
             aiScroll();
             return;
           }
-          if (!j || (!j.reply && !j.note)) {
+          if (!replyTxt) {
             /* 结构对不上：退回演示，交互不断 */
             var demo = aiDemoReply(fallbackTxt, prefs);
             aiBubble("assistant", demo.reply);
-            if (demo.route) chat.appendChild(aiRouteEl(demo.route));
-            else
+            aiRec({ k: "bot", text: demo.reply });
+            if (demo.route) {
+              chat.appendChild(aiRouteEl(demo.route));
+              aiRec({ k: "route", route: demo.route });
+            } else
               demo.recs.forEach(function (r) {
                 chat.appendChild(aiCardEl(r));
+                aiRec({ k: "card", rec: r });
               });
             aiScroll();
           }
@@ -14638,7 +14939,9 @@
           aiBusy = true;
           $("aiSend").disabled = true;
           $("aiWish").value = "";
+          aiCurConv(); /* 绑定当前会话，aiMsgs 指向它，消息持久化 */
           aiBubble("user", text);
+          aiRec({ k: "user", text: text });
           var thinking = aiBubble("assistant", "想想…");
           thinking.classList.add("thinking");
           aiFace("think");
@@ -14646,6 +14949,12 @@
           var sendTxt =
             text + (prefs.length ? "\n偏好：" + prefs.join("、") : "");
           aiMsgs.push({ role: "user", content: sendTxt });
+          /* 路线意图：要「生成/半日/雨天备用/90分钟/怎么逛…」时，
+             明确告诉服务端务必给整条 route，而不是只回一句话 */
+          var wantRoute =
+            /路线|半日|一天|一日|90|安排|备用|怎么逛|怎么晃|规划|生成|顺路|塞什么|一圈/.test(
+              text,
+            ) || prefs.indexOf("雨天备用") >= 0;
           function finish() {
             thinking.remove();
             aiFace("ping");
@@ -14656,6 +14965,7 @@
             PTAI.chat({
               messages: aiMsgs.slice(-12),
               doc: { P: P, DAYS: DAYS, RES: RES, LANG: LANG, S: S },
+              want: wantRoute ? "route" : "",
             })
               .then(function (j) {
                 finish();
@@ -14668,17 +14978,20 @@
               })
               .catch(function (e) {
                 finish();
-                aiBubble(
-                  "assistant",
+                var em =
                   "AI 没接通：" +
-                    ((e && e.message) || e) +
-                    "（先用本地演示；排查见 server/README.md）",
-                );
+                  ((e && e.message) || e) +
+                  "（先用本地演示；排查见 server/README.md）";
+                aiBubble("assistant", em);
+                aiRec({ k: "bot", text: em });
                 var demo = aiDemoReply(sendTxt, prefs);
-                if (demo.route) $("aiChat").appendChild(aiRouteEl(demo.route));
-                else
+                if (demo.route) {
+                  $("aiChat").appendChild(aiRouteEl(demo.route));
+                  aiRec({ k: "route", route: demo.route });
+                } else
                   demo.recs.forEach(function (r) {
                     $("aiChat").appendChild(aiCardEl(r));
+                    aiRec({ k: "card", rec: r });
                   });
                 aiScroll();
               });
@@ -14688,10 +15001,14 @@
               var demo = aiDemoReply(sendTxt, prefs);
               aiMsgs.push({ role: "assistant", content: demo.reply });
               aiBubble("assistant", demo.reply);
-              if (demo.route) $("aiChat").appendChild(aiRouteEl(demo.route));
-              else
+              aiRec({ k: "bot", text: demo.reply });
+              if (demo.route) {
+                $("aiChat").appendChild(aiRouteEl(demo.route));
+                aiRec({ k: "route", route: demo.route });
+              } else
                 demo.recs.forEach(function (r) {
                   $("aiChat").appendChild(aiCardEl(r));
+                  aiRec({ k: "card", rec: r });
                 });
               aiScroll();
             }, 520 + Math.random() * 400);
@@ -14754,6 +15071,13 @@
           });
           $("aiClose").addEventListener("click", function () {
             setAI(false);
+          });
+          $("aiHistBtn").addEventListener("click", aiToggleHist);
+          $("aiNewBtn").addEventListener("click", aiStartNew);
+          $("aiNewBtn2").addEventListener("click", aiStartNew);
+          $("aiHistList").addEventListener("click", function (e) {
+            var b = e.target.closest ? e.target.closest("[data-conv]") : null;
+            if (b) aiOpenConv(b.getAttribute("data-conv"));
           });
           $("aiPrefs").addEventListener("click", function (e) {
             var b = e.target.closest

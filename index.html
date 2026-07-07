@@ -1449,6 +1449,7 @@
           renderDock();
           renderAIEntry();
           wireCards(trips);
+          backfillCovers(trips); /* 云端封面跨设备补齐（列表 RPC 不含 data）*/
           /* 顶部提示区的快捷 chip：直接打开全屏对话并把这句话发出去 */
           var hero = $("aiHero");
           if (hero)
@@ -1846,6 +1847,48 @@
             "</button>"
           );
         }
+        /* 封面选取：用户自定义封面优先，其次取首个带照片的地点 */
+        function pickCover(doc) {
+          if (!doc) return "";
+          if (doc.cover) return doc.cover;
+          if (doc.P) {
+            var ks = Object.keys(doc.P);
+            for (var i = 0; i < ks.length; i++) {
+              if (doc.P[ks[i]] && doc.P[ks[i]].ph) return doc.P[ks[i]].ph;
+            }
+          }
+          return "";
+        }
+        /* 首页封面跨设备补齐。封面藏在云端 data 里，而列表 RPC（list_my_trips）
+           为了轻量并不返回 data，新设备 / 清缓存 / 换账号后本地也没有——这就是
+           「自己上传的封面换台设备就没了」的原因。这里对「本地没有封面」的云端
+           行程各拉一次 data，就地把封面贴上（顺带把整份文档缓存起来，之后打开更快）。 */
+        var _coverTried = {};
+        function backfillCovers(trips) {
+          if (!PT.isCloud() || !trips || !trips.length) return;
+          trips.forEach(function (t) {
+            if (!t || !t.id || _coverTried[t.id]) return;
+            var cached = (PT.loadDocSync && PT.loadDocSync(t.id)) || null;
+            if (pickCover(cached)) return; // 本地已有封面，无需请求
+            _coverTried[t.id] = 1; // 本次会话只试一次，避免重复请求
+            PT.loadDoc(t.id).then(
+              function (doc) {
+                var cv = pickCover(doc);
+                if (!cv) return; // 这趟确实没有封面，保持 emoji 占位
+                var sel = window.CSS && CSS.escape ? CSS.escape(t.id) : t.id;
+                var el = document.querySelector(
+                  '.tag[data-open="' + sel + '"] .cover',
+                );
+                if (!el) return; // 页面已切走
+                el.classList.remove("ph");
+                el.innerHTML = "";
+                el.style.backgroundImage =
+                  "url('" + String(cv).replace(/'/g, "%27") + "')";
+              },
+              function () {}, // 静默失败：网络/权限问题时卡片保持占位，不打断首页
+            );
+          });
+        }
         function tagCard(t) {
           var role =
             t.role === "owner"
@@ -1865,19 +1908,8 @@
             cover = "";
           if (doc) {
             nDays = (doc.DAYS || []).length;
-            if (doc.cover) cover = doc.cover; /* 用户自己导入的封面优先 */
-            if (doc.P) {
-              var ks = Object.keys(doc.P);
-              nPlaces = ks.length;
-              if (!cover)
-                for (var i = 0; i < ks.length; i++) {
-                  var pp = doc.P[ks[i]];
-                  if (pp && pp.ph) {
-                    cover = pp.ph;
-                    break;
-                  }
-                }
-            }
+            if (doc.P) nPlaces = Object.keys(doc.P).length;
+            cover = pickCover(doc); /* 自定义封面优先，其次首个地点照片 */
           }
           var nights = nDays > 1 ? nDays - 1 : 0;
           var stats = "";
