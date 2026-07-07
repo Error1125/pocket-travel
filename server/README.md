@@ -27,7 +27,7 @@ Vercel Function 也一样（B 方案）。
 
 ```ts
 const MIMO_URL = "https://api.你的Mimo厂商.com/v1/chat/completions";
-const MODEL    = "你的模型名";
+const MODEL = "你的模型名";
 ```
 
 > 这个转发按「OpenAI 兼容」格式写（`messages[]` + `response_format:json_object`）。
@@ -53,7 +53,7 @@ supabase functions new ai-proxy
 cp server/supabase-edge/ai-proxy.ts supabase/functions/ai-proxy/index.ts
 
 # 4) 把 Mimo key 存成服务端密钥（不会进仓库、不会进前端）
-supabase secrets set MIMO_API_KEY=你的key
+supabase secrets set MIMO_API_KEY=apikey
 
 # 5) 部署（--no-verify-jwt 让未登录也能调；限流已在代码里）
 supabase functions deploy ai-proxy --no-verify-jwt
@@ -72,11 +72,13 @@ AI_ENDPOINT: "https://<project-ref>.functions.supabase.co/ai-proxy",
 若能收到不是「本地演示」的回复，就接通了。
 
 ### 自测一条命令
+
 ```bash
 curl -X POST "https://<project-ref>.functions.supabase.co/ai-proxy" \
   -H "Content-Type: application/json" \
   -d '{"messages":[{"role":"user","content":"银座附近雨天备用路线"}],"doc":{}}'
 ```
+
 返回里应有 `reply`（可能还有 `P` / `route`）。报 401/500 就看下面排查。
 
 ---
@@ -102,12 +104,12 @@ key 用 `wrangler secret put MIMO_API_KEY` 存。部署后拿到的 `*.workers.d
 
 ## 排查
 
-| 现象 | 多半是 |
-| --- | --- |
-| 一直显示「本地演示」 | `AI_ENDPOINT` 没填，或填了但函数没部署成功 |
-| 401 / 403 | `MIMO_API_KEY` 没设或不对；或 Mimo 那边要求不同鉴权头 |
-| 500 + 提到字段 | Mimo 返回结构和 OpenAI 不同 → 改 `ai-proxy.ts` 取文本那一行 |
-| 浏览器报 CORS | `Access-Control-Allow-Origin` 没放行你的域名 |
+| 现象                  | 多半是                                                                                                 |
+| --------------------- | ------------------------------------------------------------------------------------------------------ |
+| 一直显示「本地演示」  | `AI_ENDPOINT` 没填，或填了但函数没部署成功                                                             |
+| 401 / 403             | `MIMO_API_KEY` 没设或不对；或 Mimo 那边要求不同鉴权头                                                  |
+| 500 + 提到字段        | Mimo 返回结构和 OpenAI 不同 → 改 `ai-proxy.ts` 取文本那一行                                            |
+| 浏览器报 CORS         | `Access-Control-Allow-Origin` 没放行你的域名                                                           |
 | 有 reply 但地图不出点 | 模型没按 JSON 给 `P`/坐标；`ai-proxy.ts` 已强制 `json_object`，可在 `SYSTEM_PROMPT` 里再强调坐标要真实 |
 
 契约（前端↔函数）写在 `app/ai-planner.js` 顶部：请求 `{messages, doc}`，

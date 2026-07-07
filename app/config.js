@@ -44,9 +44,10 @@ window.PT_CONFIG = {
   AMAP_WEB_KEY: "",
   GOOGLE_PLACES_KEY: "",
   PLACES_PROXY: "",
-  PLACES_RADIUS: 900, /* 推荐搜索半径（米）*/
+  PLACES_RADIUS: 900 /* 推荐搜索半径（米）*/,
 
   /* ── AI 行程规划（预留，见 app/ai-planner.js 的接口约定）──
    * 填你自己的转发地址后 PTAI.plan() 即可用；留空 = 未接入。 */
-  AI_ENDPOINT: "",
+  AI_ENDPOINT:
+    "https://supabase.com/dashboard/project/yhgdxutmcouxonrurgkc/functions",
 };

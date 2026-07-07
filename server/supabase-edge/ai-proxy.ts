@@ -14,8 +14,8 @@
 
 // ⚠️ 改成你的真实 Mimo 接口地址与模型名（见 server/README.md「准备」一节）
 // 这里按「OpenAI 兼容」格式写；若字段不同，改下面 fetch 的 body 与取文本那一行即可。
-const MIMO_URL = "https://api.mimo.example.com/v1/chat/completions";
-const MODEL = "mimo-latest";
+const MIMO_URL = "https://api.xiaomimimo.com/v1";
+const MODEL = "mimo-v2.5-pro";
 
 const SYSTEM_PROMPT = `你是「口袋旅行」App 里的 AI 旅行搭子。
 用户在旅途中，讨厌把旅行过成打卡任务。原则：
@@ -41,7 +41,7 @@ const SYSTEM_PROMPT = `你是「口袋旅行」App 里的 AI 旅行搭子。
 
 // 极简限流：每 IP 每小时 N 次（防止被人白嫖你的 Mimo 配额）
 const RATE = new Map<string, { n: number; t: number }>();
-const RATE_MAX = 30;
+const RATE_MAX = 10;
 
 Deno.serve(async (req: Request) => {
   const cors = {
@@ -51,26 +51,41 @@ Deno.serve(async (req: Request) => {
   };
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST")
-    return new Response(JSON.stringify({ error: "POST only" }), { status: 405, headers: cors });
+    return new Response(JSON.stringify({ error: "POST only" }), {
+      status: 405,
+      headers: cors,
+    });
 
   // 限流
   const ip = req.headers.get("x-forwarded-for") ?? "anon";
   const now = Date.now();
   const r = RATE.get(ip) ?? { n: 0, t: now };
-  if (now - r.t > 3600_000) { r.n = 0; r.t = now; }
+  if (now - r.t > 3600_000) {
+    r.n = 0;
+    r.t = now;
+  }
   if (++r.n > RATE_MAX)
-    return new Response(JSON.stringify({ reply: "今天问得有点多啦，歇一会再来～" }), { headers: cors });
+    return new Response(
+      JSON.stringify({ reply: "今天问得有点多啦，歇一会再来～" }),
+      { headers: cors },
+    );
   RATE.set(ip, r);
 
   const key = Deno.env.get("MIMO_API_KEY");
   if (!key)
-    return new Response(JSON.stringify({ error: "MIMO_API_KEY 未配置" }), { status: 500, headers: cors });
+    return new Response(JSON.stringify({ error: "MIMO_API_KEY 未配置" }), {
+      status: 500,
+      headers: cors,
+    });
 
   try {
     const { messages = [], doc = {}, want = "" } = await req.json();
     const upstream = await fetch(MIMO_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${key}`,
+      },
       body: JSON.stringify({
         model: MODEL,
         response_format: { type: "json_object" },
@@ -78,7 +93,13 @@ Deno.serve(async (req: Request) => {
           { role: "system", content: SYSTEM_PROMPT },
           { role: "system", content: "用户当前行程：" + JSON.stringify(doc) },
           ...(want === "trip"
-            ? [{ role: "system", content: "本次来自首页，用户多半想要一整趟新行程，优先返回 trip 字段。" }]
+            ? [
+                {
+                  role: "system",
+                  content:
+                    "本次来自首页，用户多半想要一整趟新行程，优先返回 trip 字段。",
+                },
+              ]
             : []),
           ...messages.slice(-12),
         ],
@@ -87,10 +108,16 @@ Deno.serve(async (req: Request) => {
     const data = await upstream.json();
     const text = data?.choices?.[0]?.message?.content ?? "{}";
     let out;
-    try { out = JSON.parse(text); }
-    catch { out = { reply: text }; } // 模型没按 JSON 输出时兜底成纯聊天
+    try {
+      out = JSON.parse(text);
+    } catch {
+      out = { reply: text };
+    } // 模型没按 JSON 输出时兜底成纯聊天
     return new Response(JSON.stringify(out), { headers: cors });
   } catch (e) {
-    return new Response(JSON.stringify({ error: String(e) }), { status: 500, headers: cors });
+    return new Response(JSON.stringify({ error: String(e) }), {
+      status: 500,
+      headers: cors,
+    });
   }
 });
