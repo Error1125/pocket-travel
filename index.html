@@ -2219,15 +2219,26 @@
             "</button>"
           );
         }
-        /* 封面选取：用户自定义封面优先，其次取首个带照片的地点 */
+        /* 封面选取：用户自定义封面优先；否则按「行程顺序」取第一个有照片的地点。
+           关键是要稳定——早先版本用 Object.keys（创建顺序），结果你点开哪个地点、
+           哪个地点晚补上照片，封面就跳成那张。改成按 天→plan 的固定顺序取，
+           点开靠后的地点不会再顶掉靠前那张。 */
         function pickCover(doc) {
           if (!doc) return "";
           if (doc.cover) return doc.cover;
-          if (doc.P) {
-            var ks = Object.keys(doc.P);
-            for (var i = 0; i < ks.length; i++) {
-              if (doc.P[ks[i]] && doc.P[ks[i]].ph) return doc.P[ks[i]].ph;
+          var P = doc.P || {};
+          var days = doc.DAYS || [];
+          for (var d = 0; d < days.length; d++) {
+            var plan = (days[d] && days[d].plan) || [];
+            for (var i = 0; i < plan.length; i++) {
+              var p = P[plan[i]];
+              if (p && p.ph) return p.ph;
             }
+          }
+          /* 兜底：行程里没排进 plan 的（比如只在随缘池），再退回创建顺序扫一遍 */
+          var ks = Object.keys(P);
+          for (var k = 0; k < ks.length; k++) {
+            if (P[ks[k]] && P[ks[k]].ph) return P[ks[k]].ph;
           }
           return "";
         }

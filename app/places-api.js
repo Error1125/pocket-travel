@@ -770,7 +770,7 @@
       ".wikipedia.org/w/api.php?action=query&format=json&origin=*&redirects=1" +
       "&generator=search&gsrnamespace=0&gsrlimit=6&gsrsearch=" +
       encodeURIComponent(q) +
-      "&prop=pageimages%7Ccoordinates%7Cextracts&piprop=thumbnail&pithumbsize=800" +
+      "&prop=pageimages%7Ccoordinates%7Cextracts&piprop=thumbnail&pithumbsize=640" +
       "&exintro=1&explaintext=1&exsentences=2";
     return getJSON(u);
   }
@@ -796,35 +796,46 @@
         return p && p.thumbnail && p.thumbnail.source;
       });
     if (!arr.length) return null;
-    var nn = normName(place.n),
-      jn = normName(place.j || "");
+    var nn = normName(cleanQuery(place.n)),
+      jn = normName(cleanQuery(place.j || ""));
+    function contains(a, b) {
+      /* b 是不是 a 的一段（要求 b 至少 2 字，避免单字乱命中）*/
+      return b.length >= 2 && a.indexOf(b) >= 0;
+    }
     function titleMatch(t) {
       t = normName(t);
-      if (!t) return false;
-      if (nn && (t === nn || t.indexOf(nn) >= 0 || nn.indexOf(t) >= 0))
-        return true;
-      if (jn && (t === jn || t.indexOf(jn) >= 0 || jn.indexOf(t) >= 0))
-        return true;
+      if (t.length < 2) return false;
+      if (nn && (t === nn || contains(t, nn) || contains(nn, t))) return true;
+      if (jn && (t === jn || contains(t, jn) || contains(jn, t))) return true;
       return false;
     }
-    function nearOK(p) {
+    function distOf(p) {
       var c = p.coordinates && p.coordinates[0];
-      if (!c || !isFinite(place.la)) return false;
-      return distM(place, { la: c.lat, ln: c.lon }) <= 2000;
+      if (!c || !isFinite(place.la)) return Infinity;
+      return distM(place, { la: c.lat, ln: c.lon });
     }
-    /* 先要坐标就在附近（≤2km，跨语言也稳）；否则退而求标题强匹配 */
-    var byCoord = arr.filter(nearOK);
-    var pg =
-      byCoord.sort(function (a, b) {
+    /* 标题匹配优先（GINZA SIX ガーデン → 命中 GINZA SIX，而不是隔壁 40m 的东急广场）；
+       坐标只做「别选到 2km 外同名」的门槛。标题都对不上时，才退回最近的条目——
+       专治跨语言标题对不上（东京塔→東京鐵塔）。 */
+    function coordOK(p) {
+      var d = distOf(p);
+      return d === Infinity || d <= 2000;
+    }
+    var titled = arr
+      .filter(function (p) {
+        return titleMatch(p.title) && coordOK(p);
+      })
+      .sort(function (a, b) {
         return (a.index || 99) - (b.index || 99);
-      })[0] ||
-      arr
-        .filter(function (p) {
-          return titleMatch(p.title);
-        })
-        .sort(function (a, b) {
-          return (a.index || 99) - (b.index || 99);
-        })[0];
+      });
+    var near = arr
+      .filter(function (p) {
+        return distOf(p) <= 2000;
+      })
+      .sort(function (a, b) {
+        return distOf(a) - distOf(b);
+      });
+    var pg = titled[0] || near[0];
     if (!pg) return null;
     return {
       ph: pg.thumbnail.source,

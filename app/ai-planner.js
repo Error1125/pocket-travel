@@ -98,6 +98,8 @@
     };
     /* want: "trip" 提示服务端：这是从首页发起、可以规划整趟新行程 */
     if (opt.want) body.want = opt.want;
+    /* here: 用户当前所在（地图中心/定位）——服务端可据此把「附近」锚在这里 */
+    if (opt.here) body.here = opt.here;
     return post(body).then(function (j) {
       if (!j || typeof j !== "object")
         throw new Error("AI 响应不是 JSON 对象");

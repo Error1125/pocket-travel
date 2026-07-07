@@ -12548,6 +12548,7 @@
           var ids = visPlan(cur).filter(function (id) {
             return !P[id].o;
           });
+          prefetchDayPhotos(ids); /* 后台把这天地标的图先暖好，点开更快 */
           var pts = [],
             n = 0;
           ids.forEach(function (id) {
@@ -12688,9 +12689,10 @@
           if (r.ph && !body.querySelector(".sphoto")) {
             var img = document.createElement("img");
             img.className = "sphoto";
+            img.decoding = "async";
+            img.loading = "eager"; /* 这是当前卡的主图，别懒加载；字节多半已被预取暖好 */
             img.src = r.ph;
             img.alt = "";
-            img.loading = "lazy";
             img.onerror = function () {
               this.style.display = "none";
               var n = this.nextElementSibling;
@@ -12773,6 +12775,37 @@
             })
             .catch(function () {});
         }
+        /* 预取：进入某天时，后台把这天地标类地点的图片/简介先查好（写进本地缓存），
+           并把图片字节也用 new Image() 暖进浏览器缓存。这样等你真去点开时，
+           enrich 命中缓存秒回、图片也基本就绪，不再现拉现等。
+           只暖缓存、不写进文档（避免频繁存档，也不影响封面）。错峰发请求。 */
+        var _prefetched = {};
+        function prefetchDayPhotos(ids) {
+          if (!SYSP || !SYSP.enrich || !ids || !ids.length) return;
+          var n = 0;
+          ids.forEach(function (id) {
+            if (n >= 12) return; /* 一天最多暖 12 个，够用又不打扰 */
+            var p = P[id];
+            if (!p || _prefetched[id]) return;
+            if (p.ph || p.ev === ENR_VER) return; /* 已经有图/已增强过，不用暖 */
+            if (!ENR_OK_CATS[p.c]) return; /* 只暖地标类（景点/体验/机位/酒店）*/
+            _prefetched[id] = 1;
+            var delay = n * 130; /* 错峰，别一次性轰维基 */
+            n++;
+            setTimeout(function () {
+              SYSP.enrich(p)
+                .then(function (r) {
+                  if (r && r.ph) {
+                    var im = new Image();
+                    im.decoding = "async";
+                    im.src = r.ph; /* 暖图片字节 */
+                  }
+                })
+                .catch(function () {});
+            }, delay);
+          });
+        }
+        var ENR_OK_CATS = { spot: 1, fun: 1, photo: 1, hotel: 1 };
         function fmtDist(m) {
           if (!isFinite(m)) return "";
           return m >= 1000
@@ -15656,45 +15689,79 @@
           thinking.classList.add("thinking");
           aiFace("think");
           var prefs = aiPrefs();
-          var sendTxt =
-            text + (prefs.length ? "\n偏好：" + prefs.join("、") : "");
-          aiMsgs.push({ role: "user", content: sendTxt });
           /* 路线意图：要「生成/半日/雨天备用/90分钟/怎么逛…」时，
              明确告诉服务端务必给整条 route，而不是只回一句话 */
           var wantRoute =
             /路线|半日|一天|一日|90|安排|备用|怎么逛|怎么晃|规划|生成|顺路|塞什么|一圈/.test(
               text,
             ) || prefs.indexOf("雨天备用") >= 0;
+          /* 位置意图：问「附近/这边/周围…」时，把地图中心（=你现在看/定位的地方）
+             反查成区域名注入进去，让 AI 以「这里」为中心就近推荐，而不是拿整趟
+             行程里别的区域来答。 */
+          var locQ =
+            /附近|周围|周边|这边|这儿|这附近|这一带|这块|我这|旁边|附近有|近一点|近点|步行|走得到|走到/.test(
+              text,
+            );
+          var here = mapNear();
           function finish() {
             aiFace("ping");
             aiBusy = false;
             $("aiSend").disabled = false;
           }
-          if (window.PTAI && PTAI.enabled()) {
-            PTAI.chat({
-              messages: aiMsgs.slice(-12),
-              doc: { P: P, DAYS: DAYS, RES: RES, LANG: LANG, S: S },
-              want: wantRoute ? "route" : "",
-            })
-              .then(function (j) {
-                finish();
-                if (j && (j.reply || j.note))
-                  aiMsgs.push({
-                    role: "assistant",
-                    content: j.reply || j.note,
-                  });
-                aiRenderResponse(j, sendTxt, prefs, thinking);
+          function go(locNote) {
+            var sendTxt =
+              text +
+              (prefs.length ? "\n偏好：" + prefs.join("、") : "") +
+              (locNote || "");
+            aiMsgs.push({ role: "user", content: sendTxt });
+            if (window.PTAI && PTAI.enabled()) {
+              PTAI.chat({
+                messages: aiMsgs.slice(-12),
+                doc: { P: P, DAYS: DAYS, RES: RES, LANG: LANG, S: S },
+                want: wantRoute ? "route" : "",
+                here: locQ && here ? here : undefined,
               })
-              .catch(function (e) {
+                .then(function (j) {
+                  finish();
+                  if (j && (j.reply || j.note))
+                    aiMsgs.push({
+                      role: "assistant",
+                      content: j.reply || j.note,
+                    });
+                  aiRenderResponse(j, sendTxt, prefs, thinking);
+                })
+                .catch(function (e) {
+                  finish();
+                  if (thinking) thinking.remove();
+                  var em =
+                    "AI 没接通：" +
+                    ((e && e.message) || e) +
+                    "（先用本地演示；排查见 server/README.md）";
+                  aiBubble("assistant", em);
+                  aiRec({ k: "bot", text: em });
+                  var demo = aiDemoReply(sendTxt, prefs);
+                  if (demo.route) {
+                    $("aiChat").appendChild(aiRouteEl(demo.route));
+                    aiRec({ k: "route", route: demo.route });
+                  } else
+                    demo.recs.forEach(function (r) {
+                      $("aiChat").appendChild(aiCardEl(r));
+                      aiRec({ k: "card", rec: r });
+                    });
+                  aiScroll();
+                  aiRenderFollowups(
+                    { route: demo.route ? 1 : null, P: demo.route ? null : 1 },
+                    sendTxt,
+                  );
+                });
+            } else {
+              setTimeout(function () {
                 finish();
                 if (thinking) thinking.remove();
-                var em =
-                  "AI 没接通：" +
-                  ((e && e.message) || e) +
-                  "（先用本地演示；排查见 server/README.md）";
-                aiBubble("assistant", em);
-                aiRec({ k: "bot", text: em });
                 var demo = aiDemoReply(sendTxt, prefs);
+                aiMsgs.push({ role: "assistant", content: demo.reply });
+                aiBubble("assistant", demo.reply);
+                aiRec({ k: "bot", text: demo.reply });
                 if (demo.route) {
                   $("aiChat").appendChild(aiRouteEl(demo.route));
                   aiRec({ k: "route", route: demo.route });
@@ -15708,29 +15775,35 @@
                   { route: demo.route ? 1 : null, P: demo.route ? null : 1 },
                   sendTxt,
                 );
+              }, 520 + Math.random() * 400);
+            }
+          }
+          /* 位置问题先反查地图中心 → 区域名，再发；反查失败就只带坐标 */
+          if (locQ && here && window.PTPlaces && PTPlaces.reverse) {
+            PTPlaces.reverse(here.la, here.ln)
+              .then(function (rec) {
+                var area = rec && (rec.ar || rec.n) ? rec.ar || rec.n : "";
+                go(
+                  "\n（我现在就在这一带：" +
+                    (area ? "「" + area + "」，" : "") +
+                    "地图中心约 " +
+                    here.la.toFixed(4) +
+                    "," +
+                    here.ln.toFixed(4) +
+                    "。请把「附近」理解成这个位置的就近周边来推荐，别拿整趟行程里其它区域凑。）",
+                );
+              })
+              .catch(function () {
+                go(
+                  "\n（我现在就在地图中心约 " +
+                    here.la.toFixed(4) +
+                    "," +
+                    here.ln.toFixed(4) +
+                    " 这一带，请就近推荐。）",
+                );
               });
           } else {
-            setTimeout(function () {
-              finish();
-              if (thinking) thinking.remove();
-              var demo = aiDemoReply(sendTxt, prefs);
-              aiMsgs.push({ role: "assistant", content: demo.reply });
-              aiBubble("assistant", demo.reply);
-              aiRec({ k: "bot", text: demo.reply });
-              if (demo.route) {
-                $("aiChat").appendChild(aiRouteEl(demo.route));
-                aiRec({ k: "route", route: demo.route });
-              } else
-                demo.recs.forEach(function (r) {
-                  $("aiChat").appendChild(aiCardEl(r));
-                  aiRec({ k: "card", rec: r });
-                });
-              aiScroll();
-              aiRenderFollowups(
-                { route: demo.route ? 1 : null, P: demo.route ? null : 1 },
-                sendTxt,
-              );
-            }, 520 + Math.random() * 400);
+            go("");
           }
         }
         function initAI() {
