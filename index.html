@@ -1198,6 +1198,10 @@
         word-break: break-word;
       }
       /* 对话历史浮层 */
+      /* hidden 属性要能真正藏住（作者的 display:flex 会盖过浏览器默认的 [hidden]） */
+      .ac-hist[hidden] {
+        display: none;
+      }
       .ac-hist {
         position: absolute;
         left: 0;
