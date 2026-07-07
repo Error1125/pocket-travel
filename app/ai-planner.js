@@ -23,7 +23,11 @@
  *     route: { title:"雨天备用路线", ids:["id1","id2"] } 可选：把 P 里的点
  *             按顺序编成一条整路线（半日/雨天备用/90分钟顺路…），
  *             前端会渲染成「整条预览卡」
+ *     trip:  { title, emoji, P:{id:{n,c,la,ln,ar,d}}, days:[{date,title,plan:[id]}] }
+ *             可选：一整趟新行程（从首页「帮我规划一次旅行」发起时用）。
+ *             前端会渲染成「行程提案卡」，用户点「创建」才落成真正的行程。
  *   }
+ * 请求里可带 want:"trip"，提示服务端优先给出上面的 trip 整体规划。
  * 原则：AI 只给预览，永远不直接改行程——落库由用户点按钮触发。
  * 坐标要求真实可导航（服务端应让模型配合地点检索工具取坐标）。
  * ========================================================================== */
@@ -75,13 +79,17 @@
   /* 聊天式：多轮对话 + 可选地点/路线预览 */
   function chat(opt) {
     opt = opt || {};
-    return post({
+    var body = {
       messages: opt.messages || [],
       doc: buildContext(opt.doc),
-    }).then(function (j) {
+    };
+    /* want: "trip" 提示服务端：这是从首页发起、可以规划整趟新行程 */
+    if (opt.want) body.want = opt.want;
+    return post(body).then(function (j) {
       if (!j || typeof j !== "object")
         throw new Error("AI 响应不是 JSON 对象");
       if (j.P) validateP(j.P);
+      if (j.trip && j.trip.P) validateP(j.trip.P);
       return j;
     });
   }

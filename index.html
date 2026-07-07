@@ -693,8 +693,85 @@
         color: var(--ink3);
       }
 
-      /* ---------- 直接进入 AI 旅行搭子的入口 ---------- */
-      #homeAI {
+      /* ---------- 首页顶部 AI 提示区（参考截图上半部分）---------- */
+      .ai-hero {
+        margin: 2px 0 20px;
+        padding: 16px 16px 14px;
+        border-radius: 20px;
+        background: linear-gradient(160deg, #e9f0ff, #f2eeff);
+        border: 1px solid rgba(120, 134, 200, 0.18);
+        box-shadow: 0 8px 22px rgba(92, 108, 190, 0.1);
+      }
+      .ai-hero .hi {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+      }
+      .ai-hero .mark {
+        flex: none;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(160deg, #5aa0ff, #3e7bd6);
+        box-shadow: 0 6px 14px rgba(62, 123, 214, 0.35);
+      }
+      .ai-hero .mark span {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+      }
+      .ai-hero .mark i {
+        width: 6px;
+        height: 14px;
+        border-radius: 4px;
+        background: #fff;
+      }
+      .ai-hero .mark i:first-child {
+        height: 10px;
+      }
+      .ai-hero .tx {
+        flex: 1;
+        min-width: 0;
+      }
+      .ai-hero .tx h3 {
+        font-family: var(--serif);
+        font-size: 17px;
+        font-weight: 700;
+        letter-spacing: 0.4px;
+        color: var(--ink);
+      }
+      .ai-hero .tx p {
+        margin-top: 3px;
+        font-size: 12.5px;
+        color: var(--ink2);
+      }
+      .ai-hero .chips {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 13px;
+      }
+      .ai-hero .chips button {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 9px 13px;
+        border-radius: 999px;
+        border: 1px solid rgba(62, 123, 214, 0.22);
+        background: rgba(255, 255, 255, 0.85);
+        color: var(--ink);
+        font-size: 12.5px;
+        font-weight: 700;
+      }
+      .ai-hero .chips button .rt {
+        color: var(--ink3);
+        font-weight: 900;
+      }
+
+      /* ---------- 右下角常驻 AI 入口（品牌标记，不是小人）---------- */
+      #aiEntry {
         position: fixed;
         right: 18px;
         bottom: calc(var(--sa-b) + 84px);
@@ -703,65 +780,269 @@
         height: 56px;
         border: 0;
         padding: 0;
-        border-radius: 18px;
-        background: linear-gradient(165deg, #ffffff, #eef1fb 68%, #e3e8f9);
-        border: 1px solid rgba(120, 134, 200, 0.24);
-        box-shadow: 0 10px 24px rgba(92, 108, 190, 0.28);
+        border-radius: 50%;
+        background: linear-gradient(160deg, #5aa0ff, #3e7bd6);
+        box-shadow: 0 12px 26px rgba(62, 123, 214, 0.42);
         display: grid;
         place-items: center;
-        animation: homeAIBob 3.8s ease-in-out infinite;
+        transition: transform 0.16s ease;
       }
-      #homeAI:active {
-        transform: scale(0.94);
+      #aiEntry:active {
+        transform: scale(0.93);
       }
-      #homeAI .eyes {
-        position: relative;
-        width: 30px;
-        height: 16px;
+      #aiEntry .m {
+        display: flex;
+        gap: 5px;
+        align-items: center;
       }
-      #homeAI .eyes i {
-        position: absolute;
-        top: 2px;
-        width: 8px;
+      #aiEntry .m i {
+        width: 7px;
+        height: 17px;
+        border-radius: 4px;
+        background: #fff;
+      }
+      #aiEntry .m i:first-child {
         height: 12px;
-        border-radius: 3px;
-        background: #3d4a8f;
-        animation: homeAIBlink 5s infinite;
-      }
-      #homeAI .eyes i.l {
-        left: 3px;
-      }
-      #homeAI .eyes i.r {
-        right: 3px;
-      }
-      #homeAI .tip {
-        position: absolute;
-        right: 64px;
-        top: 50%;
-        transform: translateY(-50%);
-        white-space: nowrap;
-        background: rgba(27, 37, 48, 0.92);
-        color: #fff;
-        font-size: 12px;
-        font-weight: 700;
-        padding: 6px 10px;
-        border-radius: 10px;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.25s;
-      }
-      #homeAI.hint .tip {
-        opacity: 1;
-      }
-      @keyframes homeAIBob {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-3px); }
-      }
-      @keyframes homeAIBlink {
-        0%, 44%, 46%, 100% { transform: scaleY(1); }
-        45% { transform: scaleY(0.15); }
       }
 
+      /* ---------- 全屏 AI 对话（从首页直接展开）---------- */
+      #aichat {
+        position: fixed;
+        inset: 0;
+        z-index: 400;
+        display: flex;
+        flex-direction: column;
+        background: linear-gradient(180deg, #f4f6fb, #eef1f7);
+        transform: translateY(100%);
+        transition: transform 0.32s cubic-bezier(0.2, 0.9, 0.25, 1);
+      }
+      #aichat.on {
+        transform: translateY(0);
+      }
+      .ac-head {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: calc(var(--sa-t) + 12px) 14px 10px;
+        border-bottom: 1px solid rgba(23, 34, 51, 0.06);
+      }
+      .ac-back {
+        flex: none;
+        width: 36px;
+        height: 36px;
+        border: 0;
+        border-radius: 12px;
+        background: rgba(23, 34, 51, 0.06);
+        color: var(--ink2);
+        font-size: 22px;
+        line-height: 1;
+      }
+      .ac-mark {
+        flex: none;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(160deg, #5aa0ff, #3e7bd6);
+      }
+      .ac-mark span {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+      }
+      .ac-mark i {
+        width: 6px;
+        height: 13px;
+        border-radius: 3px;
+        background: #fff;
+      }
+      .ac-mark i:first-child {
+        height: 9px;
+      }
+      .ac-ttl {
+        flex: 1;
+        min-width: 0;
+      }
+      .ac-ttl b {
+        display: block;
+        font-size: 15px;
+        color: var(--ink);
+      }
+      .ac-ttl small {
+        display: block;
+        margin-top: 1px;
+        font-size: 11px;
+        color: var(--ink3);
+      }
+      .ac-body {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 12px 14px 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .ac-msg {
+        max-width: 86%;
+        padding: 10px 13px;
+        border-radius: 16px;
+        font-size: 14px;
+        line-height: 1.55;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+      .ac-msg.bot {
+        align-self: flex-start;
+        background: rgba(255, 255, 255, 0.92);
+        color: var(--ink);
+        border-bottom-left-radius: 6px;
+        box-shadow: 0 3px 12px rgba(23, 34, 51, 0.06);
+      }
+      .ac-msg.me {
+        align-self: flex-end;
+        background: linear-gradient(155deg, #f2664b, #df3f23);
+        color: #fff3e8;
+        border-bottom-right-radius: 6px;
+      }
+      .ac-msg.thinking {
+        color: var(--ink3);
+        animation: acPulse 1.2s ease-in-out infinite;
+      }
+      @keyframes acPulse {
+        0%, 100% { opacity: 0.5; }
+        50% { opacity: 1; }
+      }
+      .ac-starters {
+        align-self: flex-start;
+        display: grid;
+        gap: 8px;
+        width: 88%;
+      }
+      .ac-starters button {
+        border: 1px solid rgba(23, 34, 51, 0.1);
+        border-radius: 999px;
+        padding: 10px 14px;
+        background: rgba(255, 255, 255, 0.9);
+        color: var(--ink);
+        font-size: 13px;
+        font-weight: 700;
+        text-align: left;
+        box-shadow: 0 3px 10px rgba(23, 34, 51, 0.06);
+      }
+      /* AI 规划出的整条行程预览卡 */
+      .ac-trip {
+        align-self: flex-start;
+        width: 94%;
+        box-sizing: border-box;
+        padding: 13px;
+        border-radius: 18px;
+        background: linear-gradient(165deg, #ffffff, #f1f5ff);
+        border: 1.5px solid rgba(62, 123, 214, 0.28);
+        box-shadow: 0 8px 20px rgba(62, 123, 214, 0.12);
+      }
+      .ac-trip .th {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        margin-bottom: 4px;
+      }
+      .ac-trip .th .em {
+        font-size: 24px;
+      }
+      .ac-trip .th b {
+        font-family: var(--serif);
+        font-size: 17px;
+        color: var(--ink);
+      }
+      .ac-trip .sub {
+        font-size: 12px;
+        color: var(--ink2);
+        margin-bottom: 9px;
+      }
+      .ac-trip .day {
+        padding: 7px 0;
+        border-top: 1px solid rgba(23, 34, 51, 0.06);
+      }
+      .ac-trip .day .dh {
+        font-size: 12.5px;
+        font-weight: 800;
+        color: var(--blue);
+        margin-bottom: 3px;
+      }
+      .ac-trip .day .ds {
+        font-size: 12px;
+        color: var(--ink2);
+        line-height: 1.5;
+      }
+      .ac-trip .acts {
+        display: flex;
+        gap: 8px;
+        margin-top: 11px;
+      }
+      .ac-trip .acts button {
+        flex: 1;
+        border: 0;
+        border-radius: 13px;
+        padding: 11px;
+        font-size: 13px;
+        font-weight: 900;
+      }
+      .ac-trip .acts .go {
+        background: linear-gradient(155deg, #f2664b, #df3f23);
+        color: #fff3e8;
+      }
+      .ac-trip .acts .sec {
+        background: rgba(62, 123, 214, 0.12);
+        color: var(--blue);
+      }
+      .ac-trip .acts button[disabled] {
+        opacity: 0.5;
+      }
+      .ac-inputbar {
+        flex: none;
+        display: flex;
+        gap: 8px;
+        align-items: flex-end;
+        padding: 8px 14px calc(var(--sa-b) + 10px);
+        background: rgba(255, 255, 255, 0.6);
+        border-top: 1px solid rgba(23, 34, 51, 0.06);
+      }
+      .ac-inputbar textarea {
+        flex: 1;
+        box-sizing: border-box;
+        border: 1px solid rgba(23, 34, 51, 0.12);
+        border-radius: 18px;
+        padding: 11px 14px;
+        background: #fff;
+        color: var(--ink);
+        font-size: 14px;
+        font-weight: 600;
+        outline: none;
+        resize: none;
+        max-height: 96px;
+        line-height: 1.45;
+      }
+      #acSend {
+        flex: none;
+        width: 42px;
+        height: 42px;
+        border: 0;
+        border-radius: 50%;
+        background: linear-gradient(155deg, #f2664b, #df3f23);
+        color: #fff3e8;
+        font-size: 17px;
+        font-weight: 900;
+        box-shadow: 0 5px 14px rgba(195, 52, 24, 0.35);
+      }
+      #acSend[disabled] {
+        opacity: 0.5;
+      }
+
+      /* ---------- toast ---------- */
       /* ---------- toast ---------- */
       #toast {
         position: fixed;
@@ -828,6 +1109,7 @@
     <script src="vendor/supabase.js"></script>
     <script src="app/config.js"></script>
     <script src="app/store.js"></script>
+    <script src="app/ai-planner.js"></script>
     <script>
       (function () {
         "use strict";
@@ -908,8 +1190,10 @@
           // 登录页不该有底部操作栏：清掉挂在 body 上的常驻 dock / AI 入口（退出登录时残留的根因）
           var _oldDock = $("dock");
           if (_oldDock) _oldDock.remove();
-          var _oldAI = $("homeAI");
+          var _oldAI = $("aiEntry");
           if (_oldAI) _oldAI.remove();
+          var _oldChat = $("aichat");
+          if (_oldChat) _oldChat.remove();
           var oauthBtns = "";
           if (PT.authMethods.indexOf("apple") >= 0)
             oauthBtns +=
@@ -1062,10 +1346,21 @@
             userChip(u) +
             "</header>";
 
+          var hero =
+            '<div class="ai-hero" id="aiHero">' +
+            '<div class="hi"><div class="mark"><span><i></i><i></i></span></div>' +
+            '<div class="tx"><h3>想去哪儿？我帮你安排</h3>' +
+            "<p>直接说一句话，我可以规划整趟行程、加目的地</p></div></div>" +
+            '<div class="chips">' +
+            '<button data-ask="帮我规划一次旅行">🗺️ 帮我规划一次旅行 <span class="rt">↵</span></button>' +
+            '<button data-ask="推荐几个适合现在去的目的地">✨ 推荐目的地 <span class="rt">↵</span></button>' +
+            "</div></div>";
+
           var body;
           if (!trips.length) {
             body =
-              '<div class="empty"><div class="big">🧳</div><p>还没有行程。<br>新建一个，或导入朋友发来的行程 JSON。</p></div>' +
+              hero +
+              '<div class="empty"><div class="big">🧳</div><p>还没有行程。<br>让上面的 AI 帮你规划，或自己新建 / 导入 JSON。</p></div>' +
               newCard();
           } else {
             var cards = trips
@@ -1074,6 +1369,7 @@
               })
               .join("");
             body =
+              hero +
               '<div class="eyebrow">我的旅行 · ' +
               trips.length +
               "</div>" +
@@ -1092,46 +1388,391 @@
 
           $("app").innerHTML = head + body + mode;
           renderDock();
-          renderHomeAI(trips);
+          renderAIEntry();
           wireCards(trips);
+          /* 顶部提示区的快捷 chip：直接打开全屏对话并把这句话发出去 */
+          var hero = $("aiHero");
+          if (hero)
+            [].forEach.call(hero.querySelectorAll("[data-ask]"), function (b) {
+              b.onclick = function () {
+                openAIChat(b.getAttribute("data-ask"));
+              };
+            });
         }
-        /* 首页直达 AI 旅行搭子：打开最近（或第一份）行程并自动展开 AI 面板 */
-        function renderHomeAI(trips) {
-          var old = $("homeAI");
+        /* 右下角常驻 AI 入口（品牌标记）——直接打开全屏对话 */
+        function renderAIEntry() {
+          var old = $("aiEntry");
           if (old) old.remove();
           var btn = document.createElement("button");
-          btn.id = "homeAI";
+          btn.id = "aiEntry";
           btn.type = "button";
           btn.setAttribute("aria-label", "AI 旅行搭子");
-          btn.innerHTML =
-            '<span class="tip">问问 AI 旅行搭子</span>' +
-            '<span class="eyes"><i class="l"></i><i class="r"></i></span>';
+          btn.innerHTML = '<span class="m"><i></i><i></i></span>';
           document.body.appendChild(btn);
-          /* 冒个泡提示一次它能点 */
-          setTimeout(function () {
-            btn.classList.add("hint");
-            setTimeout(function () {
-              btn.classList.remove("hint");
-            }, 2600);
-          }, 700);
           btn.onclick = function () {
-            var lastId =
-              (PT._cache && PT._cache.getLast && PT._cache.getLast()) || null;
-            var ok =
-              lastId &&
-              trips.some(function (t) {
-                return t.id === lastId;
-              });
-            var target = ok ? lastId : trips[0] && trips[0].id;
-            if (target) {
-              PT._cache.setLast(target);
-              location.href =
-                "trip.html?trip=" + encodeURIComponent(target) + "&ai=1";
-            } else {
-              toast("先建一份行程，AI 搭子就能帮你往里加地点啦");
-              openCreate();
-            }
+            openAIChat();
           };
+        }
+
+        /* ============ 全屏 AI 对话（从首页直接展开，可创建行程 / 加目的地）============ */
+        var acMsgs = [];
+        var acBusy = false;
+        var acProposals = {};
+        var acSeq = 0;
+        function acEl() {
+          var el = $("aichat");
+          if (el) return el;
+          el = document.createElement("div");
+          el.id = "aichat";
+          el.innerHTML =
+            '<div class="ac-head">' +
+            '<button class="ac-back" id="acBack">‹</button>' +
+            '<div class="ac-mark"><span><i></i><i></i></span></div>' +
+            '<div class="ac-ttl"><b>AI 旅行搭子</b><small>规划整趟 · 加目的地</small></div>' +
+            "</div>" +
+            '<div class="ac-body" id="acBody"></div>' +
+            '<div class="ac-inputbar">' +
+            '<textarea id="acInput" rows="1" placeholder="想去哪儿？比如：帮我做个东京 5 日轻松行"></textarea>' +
+            '<button id="acSend">↑</button>' +
+            "</div>";
+          document.body.appendChild(el);
+          $("acBack").onclick = closeAIChat;
+          $("acSend").onclick = function () {
+            acSend($("acInput").value);
+          };
+          $("acInput").addEventListener("keydown", function (e) {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              acSend(this.value);
+            }
+          });
+          return el;
+        }
+        function openAIChat(prefill) {
+          var el = acEl();
+          el.classList.add("on");
+          document.body.style.overflow = "hidden";
+          if (!$("acBody").childElementCount) acWelcome();
+          if (prefill) acSend(prefill);
+          else setTimeout(function () { $("acInput").focus(); }, 320);
+        }
+        function closeAIChat() {
+          var el = $("aichat");
+          if (el) el.classList.remove("on");
+          document.body.style.overflow = "";
+        }
+        function acScroll() {
+          var b = $("acBody");
+          b.scrollTop = b.scrollHeight;
+        }
+        function acBubble(role, text) {
+          var d = document.createElement("div");
+          d.className = "ac-msg " + (role === "user" ? "me" : "bot");
+          d.textContent = text;
+          $("acBody").appendChild(d);
+          acScroll();
+          return d;
+        }
+        function acWelcome() {
+          acBubble(
+            "assistant",
+            "嗨，我是你的旅行搭子。告诉我想去哪、去几天、什么节奏，我直接帮你排一版——满意就一键存成行程。",
+          );
+          var w = document.createElement("div");
+          w.className = "ac-starters";
+          [
+            "🗼 帮我规划东京 5 日轻松行",
+            "🍁 京都赏枫 3 天怎么安排",
+            "✨ 推荐几个适合现在去的目的地",
+            "🌧️ 做个周末不赶路的短途计划",
+          ].forEach(function (t) {
+            var b = document.createElement("button");
+            b.type = "button";
+            b.textContent = t;
+            b.onclick = function () {
+              acSend(t.replace(/^\S+\s/, ""));
+            };
+            w.appendChild(b);
+          });
+          $("acBody").appendChild(w);
+          acScroll();
+        }
+
+        /* 城市中心坐标（演示用；接了 API 后由模型给真实坐标）*/
+        var AC_CITY = {
+          东京: [35.6762, 139.7649, "🗼"],
+          京都: [35.0116, 135.7681, "⛩️"],
+          大阪: [34.6937, 135.5023, "🐙"],
+          北京: [39.9042, 116.4074, "🏯"],
+          上海: [31.2304, 121.4737, "🌆"],
+          香港: [22.3193, 114.1694, "🌃"],
+          东京都: [35.6762, 139.7649, "🗼"],
+        };
+        function acDetectCity(txt) {
+          for (var k in AC_CITY) if (txt.indexOf(k) >= 0) return k;
+          return null;
+        }
+        function acDetectDays(txt) {
+          var m = txt.match(/(\d+)\s*(天|日)/);
+          if (m) return Math.max(1, Math.min(10, parseInt(m[1], 10)));
+          var cn = { 一: 1, 二: 2, 两: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7 };
+          var m2 = txt.match(/([一二两三四五六七])\s*(天|日)/);
+          if (m2) return cn[m2[1]] || 3;
+          return 3;
+        }
+        /* 演示：本地拼一版行程提案（未接 API 时）*/
+        function acDemoTrip(txt) {
+          var cityName = acDetectCity(txt) || "东京";
+          var c = AC_CITY[cityName] || AC_CITY["东京"];
+          var days = acDetectDays(txt);
+          var cats = ["spot", "eat", "shop", "sweet", "photo", "fun"];
+          var P = {},
+            DAYS = [],
+            n = 0;
+          for (var d = 0; d < days; d++) {
+            var plan = [];
+            var cnt = 3 + (d % 2);
+            for (var i = 0; i < cnt; i++) {
+              var id = "p" + ++n;
+              P[id] = {
+                n: cityName + " · 第" + (d + 1) + "天地点" + (i + 1),
+                c: cats[(d + i) % cats.length],
+                la: c[0] + (Math.random() - 0.5) * 0.05,
+                ln: c[1] + (Math.random() - 0.5) * 0.06,
+                ar: cityName,
+                d: "演示占位点（接入 API 后会换成真实推荐与坐标）",
+              };
+              plan.push(id);
+            }
+            DAYS.push({
+              date: "Day " + (d + 1),
+              title: cityName + "漫游 " + (d + 1),
+              plan: plan,
+            });
+          }
+          return { title: cityName + days + "日行程", emoji: c[2], P: P, days: DAYS };
+        }
+
+        function acRenderTrip(trip) {
+          var key = "t" + ++acSeq;
+          acProposals[key] = trip;
+          var nP = trip.P ? Object.keys(trip.P).length : 0;
+          var nD = (trip.days || []).length;
+          var nights = nD > 1 ? nD - 1 : 0;
+          var h =
+            '<div class="th"><span class="em">' +
+            esc(trip.emoji || "🧳") +
+            "</span><b>" +
+            esc(trip.title || "行程提案") +
+            "</b></div>" +
+            '<div class="sub">' +
+            nD +
+            "天" +
+            (nights ? nights + "晚" : "") +
+            " · " +
+            nP +
+            "个地点</div>";
+          (trip.days || []).forEach(function (day) {
+            var names = (day.plan || [])
+              .map(function (id) {
+                return trip.P && trip.P[id] ? trip.P[id].n : "";
+              })
+              .filter(Boolean)
+              .join("、");
+            h +=
+              '<div class="day"><div class="dh">' +
+              esc(day.date || "") +
+              " · " +
+              esc(day.title || "") +
+              '</div><div class="ds">' +
+              esc(names) +
+              "</div></div>";
+          });
+          h +=
+            '<div class="acts">' +
+            '<button class="go" data-mk="' +
+            key +
+            '">✅ 创建这个行程</button>' +
+            "</div>";
+          var card = document.createElement("div");
+          card.className = "ac-trip";
+          card.innerHTML = h;
+          card.querySelector("[data-mk]").onclick = function () {
+            var btn = this;
+            btn.disabled = true;
+            btn.textContent = "创建中…";
+            acCreateTrip(acProposals[key], function (meta, err) {
+              if (err || !meta) {
+                btn.disabled = false;
+                btn.textContent = "✅ 创建这个行程";
+                acBubble("assistant", "创建失败了：" + (err || "未知错误"));
+                return;
+              }
+              btn.textContent = "✓ 已创建";
+              var done = document.createElement("div");
+              done.className = "ac-msg bot";
+              done.innerHTML =
+                "行程「" +
+                esc(meta.title) +
+                '」已经建好啦。<br><button style="margin-top:8px;border:0;border-radius:12px;padding:9px 14px;background:linear-gradient(155deg,#f2664b,#df3f23);color:#fff3e8;font-weight:900" id="acGo_' +
+                key +
+                '">去看看并继续编辑 →</button>';
+              $("acBody").appendChild(done);
+              acScroll();
+              var g = $("acGo_" + key);
+              if (g)
+                g.onclick = function () {
+                  PT._cache.setLast(meta.id);
+                  location.href =
+                    "trip.html?trip=" + encodeURIComponent(meta.id);
+                };
+            });
+          };
+          $("acBody").appendChild(card);
+          acScroll();
+        }
+
+        /* 把 AI 的行程提案落成一份真正的行程文档并创建 */
+        function acCreateTrip(trip, cb) {
+          try {
+            var doc = {
+              P: {},
+              DAYS: [],
+              RES: { sections: [], anchors: {} },
+              S: { plans: {}, done: {}, sw: {}, coach: false, nav: "google" },
+            };
+            /* 规整地点，过滤没坐标的 */
+            var idmap = {};
+            for (var oid in trip.P || {}) {
+              var p = trip.P[oid];
+              if (!p || !p.n || !isFinite(p.la) || !isFinite(p.ln)) continue;
+              var nid = "a" + (Object.keys(doc.P).length + 1);
+              idmap[oid] = nid;
+              doc.P[nid] = {
+                n: p.n,
+                c: p.c || "spot",
+                la: +p.la,
+                ln: +p.ln,
+                ar: p.ar || trip.title || "",
+                d: p.d || "",
+              };
+              if (p.t) doc.P[nid].t = p.t;
+            }
+            (trip.days || []).forEach(function (day, i) {
+              var did = "d" + (i + 1);
+              var plan = (day.plan || [])
+                .map(function (o) {
+                  return idmap[o];
+                })
+                .filter(Boolean);
+              doc.DAYS.push({
+                id: did,
+                date: day.date || "Day " + (i + 1),
+                dow: day.dow || "",
+                title: day.title || "",
+                note: day.note || "",
+                plan: plan,
+                pool: [],
+              });
+              doc.S.plans[did] = plan.slice();
+            });
+            if (!doc.DAYS.length) {
+              cb(null, "AI 没有给出可用的行程天数");
+              return;
+            }
+            PT.createTrip({
+              title: trip.title || "AI 规划的行程",
+              emoji: trip.emoji || "🧳",
+              doc: doc,
+            }).then(
+              function (meta) {
+                loadList(); /* 背后刷新首页列表 */
+                cb(meta);
+              },
+              function (e) {
+                cb(null, (e && e.message) || "创建失败");
+              },
+            );
+          } catch (e) {
+            cb(null, (e && e.message) || "创建出错");
+          }
+        }
+
+        function acSend(text) {
+          text = String(text || "").trim();
+          if (!text || acBusy) return;
+          acBusy = true;
+          $("acSend").disabled = true;
+          $("acInput").value = "";
+          acBubble("user", text);
+          var thinking = acBubble("assistant", "想想…");
+          thinking.classList.add("thinking");
+          acMsgs.push({ role: "user", content: text });
+          function finish() {
+            thinking.remove();
+            acBusy = false;
+            $("acSend").disabled = false;
+          }
+          var wantsTrip =
+            /规划|安排|行程|几日|几天|\d+\s*[天日]|计划|路线|帮我做|帮我排/.test(
+              text,
+            );
+          if (window.PTAI && PTAI.enabled()) {
+            PTAI.chat({ messages: acMsgs.slice(-12), doc: {}, want: "trip" })
+              .then(function (j) {
+                finish();
+                if (j && (j.reply || j.note)) {
+                  acMsgs.push({
+                    role: "assistant",
+                    content: j.reply || j.note,
+                  });
+                  acBubble("assistant", j.reply || j.note);
+                }
+                if (j && j.trip && j.trip.days && j.trip.days.length) {
+                  acRenderTrip(j.trip);
+                } else if (j && j.P && Object.keys(j.P).length && wantsTrip) {
+                  /* 只给了地点没给天：包成一天的行程提案 */
+                  acRenderTrip({
+                    title: "AI 推荐地点",
+                    emoji: "📍",
+                    P: j.P,
+                    days: [
+                      { date: "Day 1", title: "精选", plan: Object.keys(j.P) },
+                    ],
+                  });
+                } else if (!j || (!j.reply && !j.note)) {
+                  acBubble(
+                    "assistant",
+                    "我先按演示帮你排一版（接上 Mimo 后会是真实推荐）：",
+                  );
+                  acRenderTrip(acDemoTrip(text));
+                }
+              })
+              .catch(function () {
+                finish();
+                acBubble(
+                  "assistant",
+                  "AI 服务暂时没接通，先用本地演示给你排一版（把 Mimo key 放服务端转发即可，见 server/README.md）：",
+                );
+                acRenderTrip(acDemoTrip(text));
+              });
+          } else {
+            setTimeout(function () {
+              finish();
+              if (wantsTrip) {
+                acBubble(
+                  "assistant",
+                  "还没接入真实 AI，先用演示帮你排一版看看交互——接上 Mimo（见 server/README.md）后就是真实推荐和坐标：",
+                );
+                acRenderTrip(acDemoTrip(text));
+              } else {
+                acBubble(
+                  "assistant",
+                  "我可以帮你规划整趟行程、加目的地。试试说「帮我做个东京 5 日轻松行」。接上 Mimo 后我还能给真实推荐。",
+                );
+              }
+            }, 500 + Math.random() * 300);
+          }
         }
         function userChip(u) {
           if (!u) return "";

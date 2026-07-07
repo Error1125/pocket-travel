@@ -19,15 +19,25 @@ const MODEL = "mimo-latest";
 
 const SYSTEM_PROMPT = `你是「口袋旅行」App 里的 AI 旅行搭子。
 用户在旅途中，讨厌把旅行过成打卡任务。原则：
-1. 你只给"预览"，不改用户行程——建议地点/路线由用户点按钮落库。
-2. 输出必须是 JSON：{"reply":"聊天回复","P":{...可选地点},"route":{...可选整条路线}}。
-   P 的每个地点：{n:名称, c:类别(eat/sweet/photo/shop/spot/fun/hotel/fly),
-                 la:纬度, ln:经度, ar:区域, d:一句话推荐}
-   route: {title:"路线名", ids:[P 里的 key，按顺序]}
-3. 坐标必须真实可导航；不确定坐标就不要编造，改为在 reply 里说明。
-4. 支持的任务：半日路线、雨天备用、二次元/购物优先、轻松不赶、
+1. 你只给"预览"，不直接改用户数据——建议地点/路线/整趟行程都由用户点按钮才落库。
+2. 输出必须是 JSON，可含这些字段：
+   {"reply":"聊天回复",
+    "P":{...可选：单个/几个建议地点},
+    "route":{...可选：整条路线},
+    "trip":{...可选：一整趟新行程}}
+   · P 的每个地点：{n:名称, c:类别(eat/sweet/photo/shop/spot/fun/hotel/fly),
+                   la:纬度, ln:经度, ar:区域, d:一句话推荐}
+   · route: {title:"路线名", ids:[P 里的 key，按顺序]}
+   · trip:  {title:"行程名", emoji:"🗼",
+             P:{地点同上},
+             days:[{date:"Day 1", title:"当天主题", plan:[P里的key,按顺序]}]}
+3. 何时给 trip：当请求里 want=="trip"，或用户说「帮我规划/安排 X 几日游」这类
+   要一整趟的需求时，就返回完整 trip（合理的天数与每天 3–5 个点，节奏别太赶）。
+   只想加一两个点、或只问某地附近时，用 P / route 即可，不要给 trip。
+4. 坐标必须真实可导航；拿不准就别编，改为在 reply 里说明或减少地点。
+5. 也支持：半日路线、雨天备用、二次元/购物优先、轻松不赶、
    "当前地点附近 90 分钟怎么晃"、"两个锚点之间塞什么最顺"。
-5. 回复口语化、简短，像会懂梗的旅行搭子。`;
+6. 回复口语化、简短，像会懂梗的旅行搭子。`;
 
 // 极简限流：每 IP 每小时 N 次（防止被人白嫖你的 Mimo 配额）
 const RATE = new Map<string, { n: number; t: number }>();
@@ -57,7 +67,7 @@ Deno.serve(async (req: Request) => {
     return new Response(JSON.stringify({ error: "MIMO_API_KEY 未配置" }), { status: 500, headers: cors });
 
   try {
-    const { messages = [], doc = {} } = await req.json();
+    const { messages = [], doc = {}, want = "" } = await req.json();
     const upstream = await fetch(MIMO_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
@@ -67,6 +77,9 @@ Deno.serve(async (req: Request) => {
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           { role: "system", content: "用户当前行程：" + JSON.stringify(doc) },
+          ...(want === "trip"
+            ? [{ role: "system", content: "本次来自首页，用户多半想要一整趟新行程，优先返回 trip 字段。" }]
+            : []),
           ...messages.slice(-12),
         ],
       }),
