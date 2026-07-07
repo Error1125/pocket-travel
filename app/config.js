@@ -29,21 +29,34 @@ window.PT_CONFIG = {
   /* 品牌名，显示在首页顶部 */
   APP_NAME: "口袋旅行",
 
-  /* ── 附近推荐 & 地点图片（可选功能，断网/出错都会静默降级）──────────
+  /* ── 地点数据（搜索新建 / 附近推荐 / 目的地图片，可选，断网出错都静默降级）──
    * PLACES_PROVIDER:
-   *   "demo"   零配置演示数据，先看交互效果（默认）
-   *   "amap"   高德周边搜索（国内数据全，图片是可保存的直链）→ 填 AMAP_WEB_KEY
-   *   "google" Google Places（海外数据全，图片引用会过期、展示时现取，
-   *            key 记得在控制台按 HTTP referrer 限制到你的域名）→ 填 GOOGLE_PLACES_KEY
-   *   ""       彻底关闭，界面上不出现任何系统推荐
+   *   "demo"     零配置演示数据，先看交互效果（默认，离线可用）
+   *   "geoapify" ★推荐★ 开放地图。免费 3000 次/天、免信用卡。搜索/反查/周边全支持。
+   *   "amap"     高德（国内数据最全，图片是可保存直链）
+   *   "google"   Google Places（海外数据全，需绑卡；图片引用会过期）
+   *   ""         彻底关闭：不出现系统推荐，新建地点也停用搜索
    *
-   * ⚠️ 高德 Web 服务 key 无法按域名限制，直接放公开仓库会被人盗刷配额。
-   *    本地自用没问题；正式上线请把 PLACES_PROXY 指向自己的中转
-   *    （Supabase Edge Function 即可），key 留在服务端。 */
+   * key 放哪？两种接法（本项目默认走 A，最安全）：
+   *   A. 后端代理（推荐）：key 藏在 Supabase 服务端，前端零暴露。
+   *      1. 部署 server/supabase-edge/places-proxy.ts（步骤见该文件顶部注释 / SETUP.md）
+   *      2. supabase secrets set GEOAPIFY_KEY=你的key
+   *      3. 把返回的函数地址填进下面 PLACES_PROXY，GEOAPIFY_KEY 留空
+   *      4. PLACES_PROVIDER 改成 "geoapify"
+   *   B. 直接放前端（更省事，仅 geoapify 适用）：Geoapify key 能在后台按
+   *      「Allowed origins」锁到你的域名，锁了之后放前端也安全。
+   *      把 key 填进 GEOAPIFY_KEY、provider 改 "geoapify" 即可，不用部署代理。
+   *
+   * 目的地图片 + 简介：统一走维基百科（免 key），与上面选哪个 provider 无关。
+   *
+   * ⚠️ 高德 Web key 无法按域名限制，只能走 A（后端代理），别直接放前端。
+   * 备注：设了 PLACES_PROXY 就一定走后端；只填了 key 没改 provider 会先用演示数据。 */
   PLACES_PROVIDER: "demo",
+  GEOAPIFY_KEY: "" /* 走后端代理时留空；直接放前端时才填 */,
   AMAP_WEB_KEY: "",
   GOOGLE_PLACES_KEY: "",
-  PLACES_PROXY: "",
+  PLACES_PROXY:
+    "" /* 后端代理地址，如 https://<ref>.functions.supabase.co/places-proxy */,
   PLACES_RADIUS: 900 /* 推荐搜索半径（米）*/,
 
   /* ── AI 行程规划（预留，见 app/ai-planner.js 的接口约定）──

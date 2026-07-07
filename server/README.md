@@ -115,3 +115,49 @@ key 用 `wrangler secret put MIMO_API_KEY` 存。部署后拿到的 `*.workers.d
 
 契约（前端↔函数）写在 `app/ai-planner.js` 顶部：请求 `{messages, doc}`，
 期望 `{reply, P?, route?}`。函数负责把它翻译给 Mimo、再把 Mimo 输出整理回这个形状。
+
+---
+
+## 另一个函数：places-proxy（地点搜索 / 附近推荐 / 反查）
+
+和 AI 同理，**Geoapify 的 key 也别放前端**——用 `places-proxy` 挡在中间，
+key 存服务端。前端只知道一个 `PLACES_PROXY` 地址。
+
+```
+GitHub Pages 前端 ──GET {PROXY}/geoapify/…──▶ places-proxy ──带上 Geoapify key──▶ api.geoapify.com
+（app/config.js 只填 PLACES_PROXY，GEOAPIFY_KEY 留空）      （key 存这里的环境变量）
+```
+
+部署（和 ai-proxy 一样的套路，约 3 分钟）：
+
+```bash
+supabase functions new places-proxy
+cp server/supabase-edge/places-proxy.ts supabase/functions/places-proxy/index.ts
+supabase secrets set GEOAPIFY_KEY=你的Geoapifykey
+supabase functions deploy places-proxy --no-verify-jwt
+```
+
+把地址填进 `app/config.js`（注意是 `.functions.supabase.co` 那种调用地址）：
+
+```js
+  PLACES_PROVIDER: "geoapify",
+  GEOAPIFY_KEY: "",   // 留空，key 在服务端
+  PLACES_PROXY: "https://<project-ref>.functions.supabase.co/places-proxy",
+```
+
+自测（不带子路径 = 健康检查）：
+
+```bash
+curl "https://<project-ref>.functions.supabase.co/places-proxy"
+# → {"ok":true,"has_geoapify":true,...}
+
+curl "https://<project-ref>.functions.supabase.co/places-proxy/geoapify/v1/geocode/autocomplete?text=浅草寺&limit=3"
+# → 一个 GeoJSON FeatureCollection
+```
+
+> - 这个函数按子路径转发：`/geoapify/*`→api.geoapify.com、`/amap/*`→restapi.amap.com、
+>   `/gplaces/*`→places.googleapis.com。只有你真用到 amap/gplaces 时才需要额外
+>   `supabase secrets set AMAP_WEB_KEY=… / GOOGLE_PLACES_KEY=…`。
+> - 已内置「每 IP 每小时 600 次」限流（搜索随打字触发、给得比 AI 宽），
+>   防止有人刷光你的 Geoapify 免费额度（3000 次/天）。改 `RATE_MAX` 可调。
+> - 目的地图片 / 简介走维基百科（前端直连、免 key），不经过这个代理。

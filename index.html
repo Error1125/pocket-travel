@@ -1522,6 +1522,61 @@
             },
           );
         }
+        /* 首页快捷 chip：按状态（有没有行程 / 最近去哪 / 季节）现算，不写死 */
+        var _heroRot = 0;
+        function heroSeason() {
+          var m = new Date().getMonth() + 1;
+          if (m <= 2 || m === 12) return "冬天";
+          if (m <= 5) return "春天";
+          if (m <= 8) return "夏天";
+          return "秋天";
+        }
+        function heroSuggestions(trips) {
+          var s = heroSeason();
+          var out = [];
+          if (!trips || !trips.length) {
+            out.push({ ask: "帮我规划我的第一次旅行", label: "🗺️ 规划第一次旅行" });
+            out.push({
+              ask: "推荐几个" + s + "适合去的目的地",
+              label: "✨ " + s + "去哪儿好",
+            });
+            out.push({
+              ask: "我假期不多，推荐几个周末就能玩的地方",
+              label: "🧳 周末去哪儿",
+            });
+          } else {
+            /* 最近更新的那趟 */
+            var recent = trips[0];
+            for (var i = 1; i < trips.length; i++)
+              if ((trips[i].updatedAt || 0) > (recent.updatedAt || 0))
+                recent = trips[i];
+            var rt = String(recent.title || "上一趟行程");
+            var rtShort = rt.length > 8 ? rt.slice(0, 8) + "…" : rt;
+            out.push({
+              ask: "帮我在《" + rt + "》这趟行程里，再加几个值得去的地方",
+              label: "➕ 给《" + rtShort + "》加点地方",
+            });
+            out.push({
+              ask: "帮我在《" + rt + "》附近推荐几家好吃的",
+              label: "🍜 《" + rtShort + "》附近吃什么",
+            });
+            out.push({ ask: "再帮我规划一次新旅行", label: "🗺️ 再规划一次" });
+            out.push({
+              ask: "推荐几个" + s + "适合去的目的地",
+              label: "✨ " + s + "去哪儿好",
+            });
+          }
+          /* 首条固定（最贴状态），其余轮换取 1–2 条 → 每次进来略有不同 */
+          var head = out.slice(0, 1),
+            tail = out.slice(1),
+            pick = [];
+          if (tail.length) {
+            var st = _heroRot++ % tail.length;
+            for (var k = 0; k < tail.length && pick.length < 2; k++)
+              pick.push(tail[(st + k) % tail.length]);
+          }
+          return head.concat(pick).slice(0, 3);
+        }
         function paintList(trips) {
           var u = PT.getUser();
           var head =
@@ -1531,14 +1586,24 @@
             userChip(u) +
             "</header>";
 
+          var heroChips = heroSuggestions(trips)
+            .map(function (c) {
+              return (
+                '<button data-ask="' +
+                esc(c.ask) +
+                '">' +
+                esc(c.label) +
+                ' <span class="rt">↵</span></button>'
+              );
+            })
+            .join("");
           var hero =
             '<div class="ai-hero" id="aiHero">' +
             '<div class="hi"><div class="mark"><span><i></i><i></i></span></div>' +
             '<div class="tx"><h3>想去哪儿？我帮你安排</h3>' +
             "<p>直接说一句话，我可以规划整趟行程、加目的地</p></div></div>" +
             '<div class="chips">' +
-            '<button data-ask="帮我规划一次旅行">🗺️ 帮我规划一次旅行 <span class="rt">↵</span></button>' +
-            '<button data-ask="推荐几个适合现在去的目的地">✨ 推荐目的地 <span class="rt">↵</span></button>' +
+            heroChips +
             "</div></div>";
 
           var body;
