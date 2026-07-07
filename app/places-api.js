@@ -54,8 +54,8 @@
     if (!p) return false;
     return hasKey(p);
   }
-  /* 选了真实 provider 却还没填 key 时：静默回落到 demo 数据，
-     这样界面（搜索/推荐）不至于「空掉」，填上 key 立刻变真实。只提示一次。 */
+  /* 选了真实 provider 却没配 key/代理：直接判为「没启用」，返回空，
+     不再拿演示数据顶替（那会显示一堆假地点、误导人）。只在控制台提示一次。 */
   var _warned = false;
   function effectiveProvider() {
     var p = provider();
@@ -66,17 +66,17 @@
           console.info(
             "[PTPlaces] PLACES_PROVIDER=" +
               p +
-              " 还没配 key，先用演示数据。到 app/config.js 填 " +
+              " 还没配 key/代理，地点搜索与推荐已停用。到 app/config.js 填 " +
               (p === "geoapify"
-                ? "GEOAPIFY_KEY"
+                ? "GEOAPIFY_KEY 或 PLACES_PROXY"
                 : p === "amap"
-                  ? "AMAP_WEB_KEY"
-                  : "GOOGLE_PLACES_KEY") +
-              " 即变真实数据。",
+                  ? "AMAP_WEB_KEY 或 PLACES_PROXY"
+                  : "GOOGLE_PLACES_KEY 或 PLACES_PROXY") +
+              "。",
           );
         } catch (e) {}
       }
-      return "demo";
+      return ""; /* 没配好 → 关闭，不回落 demo */
     }
     return p;
   }
@@ -744,7 +744,7 @@
   var ENR_OK = { spot: 1, fun: 1, photo: 1, hotel: 1 };
   function enrKey(p) {
     return (
-      "ptenr:" +
+      "ptenr2:" +
       (p.ref ||
         p.n + "@" + (isFinite(p.la) ? p.la.toFixed(3) : ""))
     );
@@ -761,26 +761,31 @@
       localStorage.setItem(k, JSON.stringify({ t: Date.now(), v: val }));
     } catch (e) {}
   }
-  function wikiGeo(lang, la, ln) {
+  /* 用「地名」去维基搜条目（而不是就近抓最近的条目——那会张冠李戴），
+     再用坐标(≤2km)或标题强匹配来确认，确认不了就不配图。 */
+  function wikiSearch(lang, q) {
     var u =
       "https://" +
       lang +
-      ".wikipedia.org/w/api.php?action=query&format=json&origin=*" +
+      ".wikipedia.org/w/api.php?action=query&format=json&origin=*&redirects=1" +
+      "&generator=search&gsrnamespace=0&gsrlimit=6&gsrsearch=" +
+      encodeURIComponent(q) +
       "&prop=pageimages%7Ccoordinates%7Cextracts&piprop=thumbnail&pithumbsize=800" +
-      "&exintro=1&explaintext=1&exsentences=2" +
-      "&generator=geosearch&ggscoord=" +
-      la +
-      "%7C" +
-      ln +
-      "&ggsradius=700&ggslimit=6";
+      "&exintro=1&explaintext=1&exsentences=2";
     return getJSON(u);
   }
   function normName(s) {
     return String(s || "")
       .toLowerCase()
-      .replace(/[\s·・,，.。()（）]/g, "");
+      .replace(/[\s·・,，.。()（）"'’“”\-—]/g, "");
   }
-  function pickWiki(j, name, lang) {
+  function cleanQuery(name) {
+    return String(name || "")
+      .replace(/[（(][^)）]*[)）]/g, "")
+      .replace(/[·・].*$/, "")
+      .trim();
+  }
+  function pickWiki(j, place, lang) {
     var pages = j && j.query && j.query.pages;
     if (!pages) return null;
     var arr = Object.keys(pages)
@@ -791,16 +796,36 @@
         return p && p.thumbnail && p.thumbnail.source;
       });
     if (!arr.length) return null;
-    var nn = normName(name);
-    arr.sort(function (a, b) {
-      var at = normName(a.title),
-        bt = normName(b.title);
-      var am = nn && (at.indexOf(nn) >= 0 || nn.indexOf(at) >= 0) ? 0 : 1;
-      var bm = nn && (bt.indexOf(nn) >= 0 || nn.indexOf(bt) >= 0) ? 0 : 1;
-      if (am !== bm) return am - bm;
-      return (a.index || 99) - (b.index || 99);
-    });
-    var pg = arr[0];
+    var nn = normName(place.n),
+      jn = normName(place.j || "");
+    function titleMatch(t) {
+      t = normName(t);
+      if (!t) return false;
+      if (nn && (t === nn || t.indexOf(nn) >= 0 || nn.indexOf(t) >= 0))
+        return true;
+      if (jn && (t === jn || t.indexOf(jn) >= 0 || jn.indexOf(t) >= 0))
+        return true;
+      return false;
+    }
+    function nearOK(p) {
+      var c = p.coordinates && p.coordinates[0];
+      if (!c || !isFinite(place.la)) return false;
+      return distM(place, { la: c.lat, ln: c.lon }) <= 2000;
+    }
+    /* 先要坐标就在附近（≤2km，跨语言也稳）；否则退而求标题强匹配 */
+    var byCoord = arr.filter(nearOK);
+    var pg =
+      byCoord.sort(function (a, b) {
+        return (a.index || 99) - (b.index || 99);
+      })[0] ||
+      arr
+        .filter(function (p) {
+          return titleMatch(p.title);
+        })
+        .sort(function (a, b) {
+          return (a.index || 99) - (b.index || 99);
+        })[0];
+    if (!pg) return null;
     return {
       ph: pg.thumbnail.source,
       info: clip(pg.extract, 150),
@@ -808,15 +833,18 @@
       attr: "维基百科",
     };
   }
-  function wikiChain(langs, i, place, name) {
+  function wikiChain(langs, i, place) {
     if (i >= langs.length) return Promise.resolve(null);
-    return wikiGeo(langs[i], place.la, place.ln)
+    var lang = langs[i];
+    var q = cleanQuery(lang === "ja" && place.j ? place.j : place.n);
+    if (!q) return wikiChain(langs, i + 1, place);
+    return wikiSearch(lang, q)
       .then(function (j) {
-        var r = pickWiki(j, name, langs[i]);
-        return r || wikiChain(langs, i + 1, place, name);
+        var r = pickWiki(j, place, lang);
+        return r || wikiChain(langs, i + 1, place);
       })
       .catch(function () {
-        return wikiChain(langs, i + 1, place, name);
+        return wikiChain(langs, i + 1, place);
       });
   }
   function enrich(place, opt) {
@@ -836,7 +864,7 @@
     var cached = enrGet(k);
     if (cached) return Promise.resolve(cached.v);
     var langs = place.j ? ["ja", "zh", "en"] : ["zh", "ja", "en"];
-    return wikiChain(langs, 0, place, place.n || "")
+    return wikiChain(langs, 0, place)
       .then(function (r) {
         enrSet(k, r || null);
         return r;

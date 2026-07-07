@@ -2592,23 +2592,24 @@
       .pr-row {
         display: flex;
         align-items: center;
-        gap: 10px;
-        padding: 10px;
+        gap: 11px;
+        padding: 11px 10px;
         border-radius: 12px;
         cursor: pointer;
+        border-bottom: 1px solid rgba(27, 37, 48, 0.06);
       }
       .pr-row:active {
         background: rgba(62, 123, 214, 0.09);
       }
       .pr-em {
         flex: none;
-        width: 38px;
-        height: 38px;
-        border-radius: 11px;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 19px;
+        font-size: 20px;
         background: rgba(27, 37, 48, 0.06);
         overflow: hidden;
       }
@@ -2623,8 +2624,8 @@
       }
       .pr-n {
         display: block;
-        font-size: 14px;
-        font-weight: 800;
+        font-size: 15px;
+        font-weight: 700;
         color: var(--ink);
         white-space: nowrap;
         overflow: hidden;
@@ -2632,20 +2633,24 @@
       }
       .pr-d {
         display: block;
-        font-size: 11px;
+        font-size: 12px;
         color: var(--ink2);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        margin-top: 1px;
+        margin-top: 2px;
       }
-      .pr-add {
+      .pr-go {
         flex: none;
         font-size: 20px;
-        font-weight: 900;
-        color: var(--blue);
-        width: 28px;
+        font-weight: 400;
+        color: rgba(27, 37, 48, 0.28);
+        width: 16px;
         text-align: center;
+      }
+      /* 详情里的「设为硬节点」开关 */
+      .sd-anchor {
+        margin: 10px 0 2px;
       }
       .ps-state {
         font-size: 12.5px;
@@ -11817,14 +11822,16 @@
           return h + "</div>";
         }
         /* ==========================================================
-         * 新建地点：搜索式（像导航软件）
-         * 输名字 → 出结果 → 点一下加入，名称/坐标/区域/图片自动带好。
-         * 没名字的机位、门口，用「地图选点」拖一个点，反查地址自动补。
+         * 新建地点：搜索式（像导航软件 / 苹果地图）
+         * 输名字 → 出结果列表 → 点某条进「详情预览」（带图片/简介）→
+         * 在详情里选「加入行程 / 收进随缘池」，以及是否「设为硬节点」。
+         * 直接按搜索键 = 进第一条的详情。
+         * 没名字的机位/门口 → 「地图选点」拖个点，反查地址后同样进详情。
          * opt = { mode:'plan'|'pool', dayId }
          * ======================================================== */
-        var _psAnchor = false;
         var _psTimer = null;
         var _psSeq = 0;
+        var _searchAnchor = false;
         function mapNear() {
           try {
             var c = map.getCenter();
@@ -11833,27 +11840,23 @@
             return null;
           }
         }
-        var PS_HINT_DEFAULT =
-          "像用地图一样输名字，点结果直接加入——名称 / 坐标 / 区域自动带好，不用手填。";
         function openPlaceSearch(opt) {
           opt = opt || {};
           if (!DAYS.length) {
             toast("先在顶栏 ＋ 添加一天，再往里放地点");
             return;
           }
-          _psAnchor = false;
           var toPool = opt.mode === "pool";
           var dest = dget(opt.dayId || (toPool ? poolTarget : cur));
           var destLabel = toPool ? "随缘池" : dest ? dest.date : "行程";
           var h =
-            '<h3 class="pt">＋ 添加地点<small style="font-weight:700;color:var(--ink2)"> · ' +
+            '<h3 class="pt">搜索地点<small style="font-weight:700;color:var(--ink2)"> · 加到 ' +
             esc(destLabel) +
             "</small></h3>";
           h +=
-            '<div class="ps-anchor"><button type="button" class="ps-anchor-toggle" id="ps-anchor" aria-pressed="false">📌 <span>这是硬节点（酒店 / 机票 / 有预约）</span></button></div>';
+            '<div class="ps-search"><input id="ps-q" placeholder="搜地点名或地址，如「东京塔」「涩谷站」" autocomplete="off" enterkeyhint="search"></div>';
           h +=
-            '<div class="ps-search"><input id="ps-q" placeholder="搜地点名或地址…" autocomplete="off" enterkeyhint="search"></div>';
-          h += '<div class="ps-hint" id="ps-hint">' + PS_HINT_DEFAULT + "</div>";
+            '<div class="ps-hint" id="ps-hint">点某条看详情、再决定加不加——名称 / 坐标 / 区域 / 图片都自动带好。</div>';
           h += '<div class="ps-results" id="ps-res"></div>';
           h +=
             '<button class="add-place" id="ps-map">📍 地图上手动选点（给没名字的机位 / 门口拖个点）</button>';
@@ -11863,13 +11866,7 @@
 
           var q = $("ps-q");
           var res = $("ps-res");
-          $("ps-anchor").onclick = function () {
-            _psAnchor = !_psAnchor;
-            this.setAttribute("aria-pressed", _psAnchor ? "true" : "false");
-            $("ps-hint").textContent = _psAnchor
-              ? "硬节点会钉进当天行程、显示在情报页，之后删除需二次确认。"
-              : PS_HINT_DEFAULT;
-          };
+          var lastRecs = [];
           $("ps-no").onclick = closeMask;
           $("ps-map").onclick = function () {
             startPickForSearch(opt);
@@ -11877,10 +11874,11 @@
           function state(msg) {
             res.innerHTML = '<div class="ps-state">' + esc(msg) + "</div>";
           }
-          function run() {
+          function run(cb) {
             var val = q.value.trim();
             if (val.length < 1) {
               res.innerHTML = "";
+              lastRecs = [];
               return;
             }
             if (!window.PTPlaces || !PTPlaces.search) {
@@ -11892,29 +11890,29 @@
             PTPlaces.search({ q: val, near: mapNear(), limit: 8 })
               .then(function (recs) {
                 if (seq !== _psSeq || !$("ps-res")) return;
+                lastRecs = recs || [];
                 if (!recs.length) {
-                  state(
-                    "没找到「" + val + "」——换个说法，或用下面「地图选点」。",
-                  );
+                  state("没找到「" + val + "」——换个说法，或用下面「地图选点」。");
                   return;
                 }
                 var html = "";
                 recs.forEach(function (r, i) {
                   var c = CAT[r.c] || CAT.spot;
-                  var meta = [r.ar, fmtDist(r.dist), r.d]
+                  var meta = [fmtDist(r.dist), r.d || r.ar]
                     .filter(Boolean)
-                    .slice(0, 2)
                     .join(" · ");
                   html +=
                     '<div class="pr-row" data-i="' +
                     i +
-                    '"><span class="pr-em">' +
+                    '"><span class="pr-em" style="background:' +
+                    c.col +
+                    '22">' +
                     c.em +
                     '</span><span class="pr-tx"><span class="pr-n">' +
                     esc(r.n) +
                     '</span><span class="pr-d">' +
                     esc(meta || c.cn) +
-                    '</span></span><span class="pr-add">＋</span></div>';
+                    '</span></span><span class="pr-go">›</span></div>';
                 });
                 res.innerHTML = html;
                 res.onclick = function (e) {
@@ -11922,8 +11920,9 @@
                     ? e.target.closest(".pr-row")
                     : null;
                   if (!row) return;
-                  addSearchResult(recs[+row.getAttribute("data-i")], opt);
+                  openSearchDetail(recs[+row.getAttribute("data-i")], opt);
                 };
+                if (cb) cb(recs);
               })
               .catch(function () {
                 if (seq !== _psSeq || !$("ps-res")) return;
@@ -11934,11 +11933,15 @@
             clearTimeout(_psTimer);
             _psTimer = setTimeout(run, 280);
           });
+          /* 直接按搜索/回车：进第一条的详情 */
           q.addEventListener("keydown", function (e) {
-            if (e.key === "Enter") {
-              clearTimeout(_psTimer);
-              run();
-            }
+            if (e.key !== "Enter") return;
+            clearTimeout(_psTimer);
+            if (lastRecs.length) openSearchDetail(lastRecs[0], opt);
+            else
+              run(function (recs) {
+                if (recs.length) openSearchDetail(recs[0], opt);
+              });
           });
           setTimeout(function () {
             try {
@@ -11946,13 +11949,75 @@
             } catch (e) {}
           }, 60);
         }
-        /* 把一条搜索/反查结果直接落成地点并加进去（无表单）*/
+        /* 搜索结果 → 详情预览卡（图片/简介 + 加入按钮 + 硬节点开关）*/
+        function openSearchDetail(rec, opt) {
+          opt = opt || {};
+          if (!rec || !isFinite(rec.la)) {
+            toast("这个点没坐标，换一个试试");
+            return;
+          }
+          _searchAnchor = false;
+          closeMask({ force: true });
+          dismissBubbles();
+          sheetId = null;
+          sheetOrigin = null;
+          var c = CAT[rec.c] || CAT.spot;
+          var toPool = opt.mode === "pool";
+          var dest = dget(opt.dayId || (toPool ? poolTarget : cur));
+          var chips =
+            '<span class="sb-em" style="--tint:' +
+            c.col +
+            '26">' +
+            c.em +
+            '</span><span class="chip">' +
+            c.cn +
+            "</span>";
+          if (rec.ar) chips += '<span class="chip">' + esc(rec.ar) + "</span>";
+          if (rec.dist)
+            chips += '<span class="chip">' + fmtDist(rec.dist) + "</span>";
+          $("sbrow").innerHTML = chips;
+          $("stitle").innerHTML = esc(rec.n);
+          var b = "";
+          if (rec.d) b += '<p class="sd">' + esc(rec.d) + "</p>";
+          b +=
+            '<button type="button" class="ps-anchor-toggle sd-anchor" id="sd-anchor" aria-pressed="false">📌 <span>设为硬节点（酒店 / 机票 / 有预约）</span></button>';
+          $("sbody").innerHTML = b;
+          $("sbody").scrollTop = 0;
+          enrichRecSheet(rec, ++_recTok); /* 懒补图片+简介 */
+          $("sd-anchor").onclick = function () {
+            _searchAnchor = !_searchAnchor;
+            this.setAttribute("aria-pressed", _searchAnchor ? "true" : "false");
+          };
+          $("sfoot").innerHTML =
+            '<button class="b-main" id="sd-plan">✚ 加入 ' +
+            (dest ? dest.date : "行程") +
+            "</button>" +
+            '<button class="b-sub" id="sd-pool">🎐 收进随缘池</button>';
+          $("sd-plan").onclick = function () {
+            addSearchResult(rec, {
+              mode: "plan",
+              dayId: opt.dayId,
+              anchor: _searchAnchor,
+            });
+          };
+          $("sd-pool").onclick = function () {
+            addSearchResult(rec, {
+              mode: "pool",
+              dayId: opt.dayId,
+              anchor: _searchAnchor,
+            });
+          };
+          setSheetSnap("mid");
+          $("sheet").classList.add("on");
+        }
+        /* 把一条搜索/反查结果落成地点并加进去（无表单）*/
         function addSearchResult(rec, opt) {
           opt = opt || {};
           if (!rec || !isFinite(rec.la)) {
             toast("这个点没坐标，换一个试试");
             return;
           }
+          var anchor = !!opt.anchor;
           var id =
             "u" +
             Date.now().toString(36) +
@@ -11970,14 +12035,17 @@
           if (rec.ph) np.ph = rec.ph;
           if (rec.phref) np.pr = rec.phref;
           if (rec.pa) np.pa = rec.pa;
-          if (_psAnchor) np.a = 1;
+          if (rec.info) np.info = rec.info;
+          if (rec.wiki) np.wiki = rec.wiki;
+          if (rec.ph || rec.info) np.ev = ENR_VER; /* 详情里已增强过，别再自动清 */
+          if (anchor) np.a = 1;
           P[id] = np;
           var day = dget(opt.dayId || (opt.mode === "pool" ? poolTarget : cur));
           if (day) {
-            if (opt.mode === "pool" && !_psAnchor) {
+            if (opt.mode === "pool" && !anchor) {
               if (day.pool.indexOf(id) < 0) day.pool.push(id);
             } else {
-              if (opt.mode === "pool" && _psAnchor)
+              if (opt.mode === "pool" && anchor)
                 toast("📌 锚点不进随缘池——已直接钉进 " + day.date);
               if (day.plan.indexOf(id) < 0) day.plan.push(id);
               if (!S.plans[day.id]) S.plans[day.id] = [];
@@ -11990,13 +12058,13 @@
           renderInfo();
           if (tab === "pool") renderPool();
           toast(
-            _psAnchor
+            anchor
               ? "📌 已钉进 " + (day ? day.date : "行程")
               : "✚ 已添加「" + esc(rec.n) + "」",
           );
           if (day) openSheet(id, { keep: true });
         }
-        /* 地图选点 → 反查地址 → 自动落库（给没名字的地方）*/
+        /* 地图选点 → 反查地址 → 进详情预览 */
         function startPickForSearch(opt) {
           closeMask({ force: true });
           _pick = {
@@ -12012,21 +12080,21 @@
                 d: "",
               };
               var done = false;
-              function add(rec) {
+              function go(rec) {
                 if (done) return;
                 done = true;
-                addSearchResult(rec, opt);
+                openSearchDetail(rec, opt);
               }
               if (window.PTPlaces && PTPlaces.reverse) {
                 toast("📍 选好了，正在识别地点…");
                 PTPlaces.reverse(la, ln)
                   .then(function (rec) {
-                    add(rec && rec.n ? rec : fallback);
+                    go(rec && rec.n ? rec : fallback);
                   })
                   .catch(function () {
-                    add(fallback);
+                    go(fallback);
                   });
-              } else add(fallback);
+              } else go(fallback);
             },
             cancel: function () {
               openPlaceSearch(opt);
@@ -12644,28 +12712,44 @@
           }
         }
         /* 详情卡：懒补图片 + 目的地简介，并持久化到地点（导出/同步都带着）*/
+        /* 增强版本号：旧版（无 ev / ev<此值）配错的维基图会被清掉重来 */
+        var ENR_VER = 2;
+        /* 详情卡打开前先跑：旧算法配错的维基图（有 p.wiki 说明是维基来的、
+           p.ev 不是当前版本说明是旧的）清掉，让它按新逻辑重配。幂等。 */
+        function healStaleEnrich(p) {
+          if (p && p.wiki && p.ev !== ENR_VER) {
+            delete p.ph;
+            delete p.info;
+            delete p.pa;
+            delete p.wiki;
+            return true;
+          }
+          return false;
+        }
         function enrichPlaceSheet(id) {
           if (!SYSP || !SYSP.enrich) return;
           var p = P[id];
           if (!p) return;
-          if (placePhotoSrc(p) && p.info) return; /* 都有了，不折腾 */
+          if (placePhotoSrc(p) && p.info && p.ev === ENR_VER) return; /* 都有且是新版，不折腾 */
           SYSP.enrich(p)
             .then(function (r) {
-              if (!r || sheetId !== id) return;
+              if (sheetId !== id) return;
               var body = $("sbody");
-              if (!body) return;
-              var changed = false;
-              if (r.ph && !p.ph) {
-                p.ph = r.ph;
-                changed = true;
+              var changed = p.ev !== ENR_VER;
+              p.ev = ENR_VER; /* 标记已按新版增强过（即使没找到图，也别反复重试）*/
+              if (r) {
+                if (r.ph && !p.ph) {
+                  p.ph = r.ph;
+                  changed = true;
+                }
+                if (r.attr && !p.pa) p.pa = r.attr;
+                if (r.info && !p.info) {
+                  p.info = r.info;
+                  changed = true;
+                }
+                if (r.wiki && !p.wiki) p.wiki = r.wiki;
+                if (body) injectEnrich(body, r);
               }
-              if (r.attr && !p.pa) p.pa = r.attr;
-              if (r.info && !p.info) {
-                p.info = r.info;
-                changed = true;
-              }
-              if (r.wiki && !p.wiki) p.wiki = r.wiki;
-              injectEnrich(body, r);
               if (changed) {
                 try {
                   save();
@@ -13370,6 +13454,11 @@
           opt = opt || {};
           var p = P[id];
           if (!p) return;
+          if (healStaleEnrich(p)) {
+            try {
+              save();
+            } catch (e) {}
+          } /* 旧版配错的图先清，避免同步渲染时闪出错图 */
           sheetId = id;
           if (opt.origin !== undefined) sheetOrigin = opt.origin;
           else if (!opt.keep) sheetOrigin = null;
@@ -15120,6 +15209,27 @@
           aiScroll();
           return d;
         }
+        /* 把「想想…」这个气泡就地变成可点开的思考过程（点标题展开）。
+           模型没给思考链时就直接移除气泡。 */
+        function revealThinking(bubbleEl, text) {
+          if (!bubbleEl) return;
+          text = String(text || "").trim();
+          if (!text) {
+            bubbleEl.remove();
+            return;
+          }
+          var d = document.createElement("details");
+          d.className = "ai-think";
+          var s = document.createElement("summary");
+          s.textContent = "💭 想想 · 点开看我怎么想的";
+          var body = document.createElement("div");
+          body.className = "ai-think-body";
+          body.textContent = text;
+          d.appendChild(s);
+          d.appendChild(body);
+          if (bubbleEl.parentNode) bubbleEl.parentNode.replaceChild(d, bubbleEl);
+          else $("aiChat").appendChild(d);
+        }
         /* ====== 动态建议 chip（起始 & 每次回答后）——都按当前行程状态现算，不写死 ====== */
         function aiSeason() {
           var m = new Date().getMonth() + 1;
@@ -15427,9 +15537,17 @@
           }
           return arr.slice(0, 10);
         }
-        function aiRenderResponse(j, fallbackTxt, prefs) {
+        function aiRenderResponse(j, fallbackTxt, prefs, thinkingEl) {
           var chat = $("aiChat");
-          if (j && j.reasoning) {
+          /* 「想想…」气泡就地变成可点开的思考过程；没有思考链就移除它 */
+          if (thinkingEl) {
+            if (j && j.reasoning) {
+              revealThinking(thinkingEl, j.reasoning);
+              aiRec({ k: "think", text: j.reasoning });
+            } else {
+              thinkingEl.remove();
+            }
+          } else if (j && j.reasoning) {
             aiReasoningEl(j.reasoning);
             aiRec({ k: "think", text: j.reasoning });
           }
@@ -15548,7 +15666,6 @@
               text,
             ) || prefs.indexOf("雨天备用") >= 0;
           function finish() {
-            thinking.remove();
             aiFace("ping");
             aiBusy = false;
             $("aiSend").disabled = false;
@@ -15566,10 +15683,11 @@
                     role: "assistant",
                     content: j.reply || j.note,
                   });
-                aiRenderResponse(j, sendTxt, prefs);
+                aiRenderResponse(j, sendTxt, prefs, thinking);
               })
               .catch(function (e) {
                 finish();
+                if (thinking) thinking.remove();
                 var em =
                   "AI 没接通：" +
                   ((e && e.message) || e) +
@@ -15594,6 +15712,7 @@
           } else {
             setTimeout(function () {
               finish();
+              if (thinking) thinking.remove();
               var demo = aiDemoReply(sendTxt, prefs);
               aiMsgs.push({ role: "assistant", content: demo.reply });
               aiBubble("assistant", demo.reply);
