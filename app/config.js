@@ -51,16 +51,15 @@ window.PT_CONFIG = {
    *
    * ⚠️ 高德 Web key 无法按域名限制，只能走 A（后端代理），别直接放前端。
    * 备注：设了 PLACES_PROXY 就一定走后端；只填了 key 没改 provider 会先用演示数据。 */
-  PLACES_PROVIDER: "demo",
+  PLACES_PROVIDER: "geoapify",
   GEOAPIFY_KEY: "" /* 走后端代理时留空；直接放前端时才填 */,
   AMAP_WEB_KEY: "",
   GOOGLE_PLACES_KEY: "",
   PLACES_PROXY:
-    "" /* 后端代理地址，如 https://<ref>.functions.supabase.co/places-proxy */,
+    "https://yhgdxutmcouxonrurgkc.supabase.co/functions/v1/places-proxy" /* 后端代理地址，如 https://<ref>.functions.supabase.co/places-proxy */,
   PLACES_RADIUS: 900 /* 推荐搜索半径（米）*/,
 
   /* ── AI 行程规划（预留，见 app/ai-planner.js 的接口约定）──
    * 填你自己的转发地址后 PTAI.plan() 即可用；留空 = 未接入。 */
-  AI_ENDPOINT:
-    "https://yhgdxutmcouxonrurgkc.supabase.co/functions/v1/ai-proxy",
+  AI_ENDPOINT: "https://yhgdxutmcouxonrurgkc.supabase.co/functions/v1/ai-proxy",
 };
